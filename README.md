@@ -5,3 +5,4 @@ Linux(Ubuntu)環境で、HariboteOSのLinux版を作ってみるプロジェク�
 
 HariboteOSでは、「nask」という独自アセンブラを使いますが、NASMでやる予定です。
 
+開発の詳細は、[Wikiページ](https://github.com/horie-t/Aomushi/wiki)に書いていきます。
