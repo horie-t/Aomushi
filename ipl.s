@@ -6,7 +6,7 @@
 	
 	# FAT12 フロッピーディスクであることの宣言
 	.byte	0x90
-	.ascii 	"HELLOIPL"	# ブートセクタの名前(8バイト)
+	.ascii 	"AOMUSHI "	# ブートセクタの名前(8バイト)
 	.word 	512		# 1セクタのサイズ
 	.byte 	1		# クラスタのサイズ
 	.word 	1		# FATの開始位置
@@ -21,7 +21,7 @@
 	.int	2880		# ドライブの大きさをもう一度
 	.byte	0, 0, 0x29	# 不明
 	.int	0xffffffff	# ボリュームシリアル番号？
-	.ascii	"HELLO-OS   "	# ディスクの名前(11バイト)
+	.ascii	"AOMUSHI-OS "	# ディスクの名前(11バイト)
 	.ascii	"FAT12   "	# フォーマットの名前(8バイト)
 	.skip	18, 0x00	# 18バイト空けておく
 	
@@ -31,8 +31,27 @@ entry:	# プログラム本体
 	movw	%ax, %ss
 	movw	$0x7c00, %sp
 	movw	%ax, %ds
+
+	# ディスクを読む
+	movw	$0x0820, %ax
 	movw	%ax, %es
+
+	movb	$0, %ch		# シリンダ0
+	movb	$0, %dh		# ヘッド0
+	movb	$2, %cl		# セクタ2
+
+	movb	$0x02, %ah	# ディスク読み込み
+	movb	$1, %al		# 1セクタ分
+	movw	$0, %bx
+	movb	$0x00, %dl	# Aドライブ
+	int	$0x13
+	jc	error
 	
+fin:	# 読み終わったけどとりあえずやることないので寝る
+	hlt			# 何かあるまでCPUを停止させる
+	jmp	fin		# 無限ループ
+
+error:
 	movw	$msg, %si
 	
 putloop: # 文字表示ループ。NUL文字が来るまで、ソフトウェア割り込み命令を使って、文字を表示していく。
@@ -45,13 +64,9 @@ putloop: # 文字表示ループ。NUL文字が来るまで、ソフトウェア
 	int	$0x10		# ビデオBIOS呼び出し
 	jmp	putloop
 
-fin:
-	hlt			# 何かあるまでCPUを停止させる
-	jmp	fin
-
 msg:	# メッセージ部分
 	.byte	0x0a, 0x0a	# 改行を2つ
-	.ascii	"hello, world"
+	.ascii	"load error"
 	.byte 	0x0a		# 改行
 	.byte 	0		# NUL文字
 
