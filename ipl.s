@@ -1,4 +1,6 @@
 	.file "helloos.s"
+
+	.equ	CYLS, 10
 	
 .code16
 .text
@@ -72,7 +74,17 @@ next:	# 次のセクタの読み込み
 	# 18セクタまで繰り返し
 	addb	$1, %cl
 	cmpb	$18, %cl
-	jbe	readloop	# %cl <= 18 だったらreadloopへ
+	jbe	readloop	#  18 >= %cl だったらreadloopへ
+	
+	movb	$1, %cl
+	addb	$1, %dh
+	cmpb	$2, %dh
+	jb	readloop	# 2 > %dh だったらreadloopへ
+
+	movb	$0, %dh
+	movb	$1, %ch
+	cmpb	CYLS, %ch
+	jb	readloop	# CYLS > %ch だったらreadloopへ
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
 	hlt			# 何かあるまでCPUを停止させる
