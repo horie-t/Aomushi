@@ -85,6 +85,9 @@ next:	# 次のセクタの読み込み
 	movb	$1, %ch
 	cmpb	CYLS, %ch
 	jb	readloop	# CYLS > %ch だったらreadloopへ
+
+	# 読み終わったのでharibote.sysを実行だ！
+	jmp	0xc400		# OS自作本とはアドレスが違うが…
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
 	hlt			# 何かあるまでCPUを停止させる
