@@ -87,6 +87,7 @@ next:	# 次のセクタの読み込み
 	jb	readloop	# CYLS > %ch だったらreadloopへ
 
 	# 読み終わったのでharibote.sysを実行だ！
+	movb	%ch, (0x0ff0)	# IPLが読み込んだシリンダ数を書き込んでおく。
 	jmp	0xc400		# OS自作本とはアドレスが違うが…
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
