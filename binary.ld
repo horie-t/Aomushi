@@ -13,4 +13,3 @@ SECTIONS
 	.text : { *(.text) } > ROM
 }
 
-
