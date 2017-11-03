@@ -40,6 +40,7 @@ entry:	# プログラム本体
 	movb	$0, %dh		# ヘッド0
 	movb	$2, %cl		# セクタ2
 
+readloop:	
 	movw	$0, %si		# リトライ・カウントを0にセット
 
 retry:	# ディスク読み込み(リトライ機能あり)
@@ -48,7 +49,7 @@ retry:	# ディスク読み込み(リトライ機能あり)
 	movw	$0, %bx
 	movb	$0x00, %dl	# Aドライブ
 	int	$0x13		# ディスクBIOS呼び出し
-	jnc	fin		# エラーがなければfinへ
+	jnc	next		# エラーがなければnextへ
 
 	# リトライ回数が多ければerrorへ
 	addw	$1, %si		# リトライ・カウントをインクリメント
@@ -62,6 +63,16 @@ retry:	# ディスク読み込み(リトライ機能あり)
 
 	# リトライ
 	jmp	retry
+
+next:	# 次のセクタの読み込み
+	# 読み込み先のアドレスを0x200進める
+	movw	%es, %ax
+	addw	$0x0020, %ax
+	movw	%ax, %es
+	# 18セクタまで繰り返し
+	addb	$1, %cl
+	cmpb	$18, %cl
+	jae	readloop
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
 	hlt			# 何かあるまでCPUを停止させる
