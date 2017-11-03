@@ -40,12 +40,28 @@ entry:	# プログラム本体
 	movb	$0, %dh		# ヘッド0
 	movb	$2, %cl		# セクタ2
 
+	movw	$0, %si		# リトライ・カウントを0にセット
+
+retry:	# ディスク読み込み(リトライ機能あり)
 	movb	$0x02, %ah	# ディスク読み込み
 	movb	$1, %al		# 1セクタ分
 	movw	$0, %bx
 	movb	$0x00, %dl	# Aドライブ
+	int	$0x13		# ディスクBIOS呼び出し
+	jnc	fin		# エラーがなければfinへ
+
+	# リトライ回数が多ければerrorへ
+	addw	$1, %si		# リトライ・カウントをインクリメント
+	cmpw	$5, %si		# リトライ・カウントとリトライ回数(5)と比較
+	jae	error		# リトライ回数以上なら、error
+
+	# ドライブのリセット
+	movb	$0x00, %ah
+	movb	$0x00, %dl
 	int	$0x13
-	jc	error
+
+	# リトライ
+	jmp	retry
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
 	hlt			# 何かあるまでCPUを停止させる
