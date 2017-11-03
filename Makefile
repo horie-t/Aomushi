@@ -10,8 +10,8 @@ $(TARGET) : ipl.bin aomushi.sys
 	cp aomushi.sys /mnt
 	umount /mnt
 
-ipl.bin : ipl.s
-	$(CC) -nostdlib ipl.s -o ipl.bin -T binary.ld
+ipl.bin : ipl10.s
+	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
 
 aomushi.sys : aomushi.s
 	$(CC) -nostdlib aomushi.s -o aomushi.sys -T binary.ld
