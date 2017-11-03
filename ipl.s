@@ -54,7 +54,7 @@ retry:	# ディスク読み込み(リトライ機能あり)
 	# リトライ回数が多ければerrorへ
 	addw	$1, %si		# リトライ・カウントをインクリメント
 	cmpw	$5, %si		# リトライ・カウントとリトライ回数(5)と比較
-	jbe	error		# リトライ回数以上なら、error
+	jae	error		# リトライ回数以上なら、error
 
 	# ドライブのリセット
 	movb	$0x00, %ah
@@ -72,7 +72,7 @@ next:	# 次のセクタの読み込み
 	# 18セクタまで繰り返し
 	addb	$1, %cl
 	cmpb	$18, %cl
-	jae	readloop
+	jbe	readloop	# %cl <= 18 だったらreadloopへ
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
 	hlt			# 何かあるまでCPUを停止させる
