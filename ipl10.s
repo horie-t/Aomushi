@@ -86,9 +86,9 @@ next:	# 次のセクタの読み込み
 	cmpb	CYLS, %ch
 	jb	readloop	# CYLS > %ch だったらreadloopへ
 
-	# 読み終わったのでharibote.sysを実行だ！
+	# 読み終わったのでaomushi.sysを実行だ！
 	movb	%ch, (0x0ff0)	# IPLが読み込んだシリンダ数を書き込んでおく。
-	jmp	0xc400		# OS自作本とはアドレスが違うが…
+	jmp	0xc200		# 
 	
 fin:	# 読み終わったけどとりあえずやることないので寝る
 	hlt			# 何かあるまでCPUを停止させる

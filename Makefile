@@ -5,21 +5,25 @@ TARGET = aomushi.img
 all : $(TARGET)
 
 $(TARGET) : ipl.bin aomushi.sys
-	mformat -f 1440 -C -B ipl.bin -i $(TARGET)
-	mount $(TARGET) /mnt -t msdos -o loop,fat=12,check=strict,uid=1000,gid=1000,debug
-	cp aomushi.sys /mnt
-	umount /mnt
+	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
+	mcopy -i $(TARGET) aomushi.sys ::
 
-ipl.bin : ipl10.s
+ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
 
-aomushi.sys : aomushi.s
-	$(CC) -nostdlib aomushi.s -o aomushi.sys -T binary.ld
+aomushi.sys : asmhead.bin ./bootpack.hrb
+	cp asmhead.bin ./bootpack.hrb > aomushi.sys
 
-run :
+asmhead.bin : asmhead.s
+	$(CC) -nostdlib asmhead.s -o asmhead.bin -T binary.ld
+
+bootpack.hrb : bootpack.c
+	$(CC) -march=i486 -m32 -nostdlib bootpack.c -o bootpack.hrb -T hrb.ld
+
+run : $(TARGET)
 	qemu-system-i386 -fda $(TARGET) -boot a
 
 .PHONY : clean
 clean :
-	-rm -f $(TARGET) ipl.bin aomushi.sys *~
+	-rm -f $(TARGET) *.bin *.sys *.hrb *~
 
