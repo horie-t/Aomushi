@@ -19,7 +19,7 @@
 	movb	$0x13, %al	# VGAグラフィックス、320 x 200 x 8bitカラー
 	movb	$0x00, %ah
 	int	$0x10
-
+	
 	# 画面モードをメモ
 	movb	$8, (VMODE)
 	movw	$320, (SCRNX)
@@ -119,7 +119,7 @@ memcpy:
 	addl	$4, %esi
 	movl	%eax, (%edi)
 	addl	$4, %edi
-	subl 	1, %ecx
+	subl 	$1, %ecx
 	jnz	memcpy		# 引き算した結果が0でなければmemcpyへ
 	ret
 
