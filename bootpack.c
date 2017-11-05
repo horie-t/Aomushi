@@ -45,7 +45,9 @@ void HariMain(void)
   }
 }
 
-  unsigned char table_rgb[16 * 3] = {
+void init_pallete(void)
+{
+  static unsigned char table_rgb[16 * 3] = {
     0x00, 0x00, 0x00,	/* 黒 */
     0xff, 0x00, 0x00,	/* 明るい赤 */
     0x00, 0xff, 0x00,	/* 明るい緑 */
@@ -63,9 +65,6 @@ void HariMain(void)
     0x00, 0x84, 0x84,	/* 暗い水色 */
     0x84, 0x84, 0x84,	/* 暗い灰色 */
   };
-
-void init_pallete(void)
-{
 
   set_pallete(0, 15, table_rgb);
 
