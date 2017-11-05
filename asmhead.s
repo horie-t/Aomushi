@@ -92,15 +92,15 @@ pipelineflush:
 	# asmheadでしなければいけないことは、全部終わったので、
 	# 後はbootbackに任せる
 
-	# bootbackの起動
+	# bootbackの起動(.dataセクションデータを移動する)
 	movl	$BOTPAK, %ebx
-	movl	16(%ebx), %ecx
-	addl	$3, %ecx
-	shrl	$2, %ecx
+	movl	16(%ebx), %ecx	# .dataセクションのサイズ
+	addl	$3, %ecx	#
+	shrl	$2, %ecx	# 
 	jz	skip
-	movl	20(%ebx), %esi
+	movl	20(%ebx), %esi  # .dataセクションの転送元
 	addl	%ebx, %esi
-	movl	12(%ebx), %edi
+	movl	12(%ebx), %edi  # .dataセクションの転送先
 	call	memcpy
 
 skip:
