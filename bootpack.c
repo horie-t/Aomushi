@@ -35,17 +35,10 @@ struct BOOTINFO {
 
 void HariMain(void)
 {
-  unsigned char *vram;
-  int xsize, ysize;
-  struct BOOTINFO *binfo;
+  struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
   
   init_pallete();
-  binfo = (struct BOOTINFO *) 0x0ff0;
-  xsize = (*binfo).scrnx;
-  ysize = (*binfo).scrny;
-  vram = (*binfo).vram;
-
-  init_screen(vram, xsize, ysize);
+  init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
   
   for (;;) {
     io_hlt();
