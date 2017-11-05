@@ -12,10 +12,10 @@ ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
 
 aomushi.sys : asmhead.bin bootpack.hrb
-	cp asmhead.bin bootpack.hrb > aomushi.sys
+	cat asmhead.bin bootpack.hrb > aomushi.sys
 
 asmhead.bin : asmhead.s
-	$(CC) -nostdlib asmhead.s -o asmhead.bin -T binary.ld
+	$(CC) -nostdlib asmhead.s -o asmhead.bin -T head.ld
 
 bootpack.hrb : bootpack.c naskfunc.s
 	$(CC) -march=i486 -m32 -nostdlib bootpack.c naskfunc.s -o bootpack.hrb -T hrb.ld
