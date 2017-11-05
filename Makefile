@@ -15,7 +15,7 @@ aomushi.sys : asmhead.bin ./bootpack.hrb
 	cat asmhead.bin ./bootpack.hrb > aomushi.sys
 
 asmhead.bin : asmhead.s
-	$(CC) -nostdlib asmhead.s -o asmhead.bin -T binary.ld
+	$(CC) -nostdlib asmhead.s -o asmhead.bin -T head.ld
 
 bootpack.hrb : bootpack.c
 	$(CC) -march=i486 -m32 -nostdlib bootpack.c -o bootpack.hrb -T hrb.ld
