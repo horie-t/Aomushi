@@ -82,8 +82,8 @@ next:	# 次のセクタの読み込み
 	jb	readloop	# 2 > %dh だったらreadloopへ
 
 	movb	$0, %dh
-	movb	$1, %ch
-	cmpb	CYLS, %ch
+	addb	$1, %ch
+	cmpb	$CYLS, %ch
 	jb	readloop	# CYLS > %ch だったらreadloopへ
 
 	# 読み終わったのでaomushi.sysを実行だ！
