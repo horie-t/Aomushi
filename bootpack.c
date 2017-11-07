@@ -25,15 +25,14 @@ struct MOUSE_DEC {
 void enable_mouse(struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
-extern struct FIFO8 keyfifo;
-extern struct FIFO8 mousefifo;
+extern struct FIFO8 keyfifo, mousefifo;
 
 
 void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
   char mcursor[16 * 16];
-  char msg[256], s[16], keybuf[32];
+  char msg[256], s[16], keybuf[32], mousebuf[128];
   int mx;
   int my;
   int i;
@@ -45,6 +44,7 @@ void HariMain(void)
   io_sti();	/* IDT/PICの初期化が完了したので、CPUの割り込み禁止を解除 */
   
   fifo8_init(&keyfifo, 32, keybuf);
+  fifo8_init(&mousefifo, 128, mousebuf);
   io_out8(PIC0_IMR, 0xf9); /* PIC1とキーボードを許可(11111001) */
   io_out8(PIC1_IMR, 0xef); /* マウスを許可(11101111) */
   init_keyboard();
