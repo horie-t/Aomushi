@@ -35,11 +35,15 @@ void HariMain(void)
   
   for (;;) {
     io_cli();
-    if (keybuf.flag == 0) {
+    if (keybuf.len == 0) {
       io_stihlt();
     } else {
-      i = keybuf.data;
-      keybuf.flag = 0;
+      i = keybuf.data[keybuf.next_r];
+      keybuf.len--;
+      keybuf.next_r++;
+      if (keybuf.next_r == 32) {
+	keybuf.next_r = 0;
+      }
       io_sti();
       
       sprintk(s, "%02X", i);
