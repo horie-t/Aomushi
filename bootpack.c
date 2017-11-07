@@ -13,6 +13,7 @@
 void wait_KBC_sendready(void);
 void init_keyboard(void);
 
+
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define MOUSE_ENABLE	0xf4
 
@@ -20,6 +21,7 @@ void enable_mouse(void);
 
 
 extern struct FIFO8 keyfifo;
+extern struct FIFO8 mousefifo;
 
 
 void HariMain(void)
@@ -56,15 +58,24 @@ void HariMain(void)
   
   for (;;) {
     io_cli();
-    if (fifo8_status(&keyfifo) == 0) {
+    if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0) {
       io_stihlt();
     } else {
-      i = fifo8_get(&keyfifo);
-      io_sti();
+      if (fifo8_status(&keyfifo) != 0) {
+	i = fifo8_get(&keyfifo);
+	io_sti();
       
-      sprintk(s, "%02X", i);
-      boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 16, 15, 31);
-      putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+	sprintk(s, "%02X", i);
+	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 16, 15, 31);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+      } else if (fifo8_status(&mousefifo) != 0) {
+	i = fifo8_get(&mousefifo);
+	io_sti();
+      
+	sprintk(s, "%02X", i);
+	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 32, 16, 47, 31);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
+      }
     }
   }
 }
