@@ -1,10 +1,14 @@
 .code32
+	.extern inthandler21, inthandler2c
+	
 	.global	io_hlt, io_cli, io_sti, io_stihlt
 	.global io_in8, io_in16, io_in32
 	.global io_out8, io_out16, io_out32
 	.global io_load_eflags, io_store_eflags
 	.global load_gdtr, load_idtr
 
+	.global asm_inthandler21, asm_inthandler27, asm_inthandler2c
+	
 .text
 io_hlt:		# void io_hlt(void)
 	hlt
@@ -81,3 +85,51 @@ load_idtr:	# void load_idtr(int limit, int addr)
 	movw	%ax, 6(%esp)
 	lidt	6(%esp)
 	ret
+
+asm_inthandler21:
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movl	%esp, %eax
+	pushl	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler21
+	popl 	%eax
+	popa
+	popw	%ds
+	popw	%es
+	iret
+
+asm_inthandler27:
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movl	%esp, %eax
+	pushl	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler27
+	popl 	%eax
+	popa
+	popw	%ds
+	popw	%es
+	iret
+
+asm_inthandler2c:
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movl	%esp, %eax
+	pushl	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler2c
+	popl 	%eax
+	popa
+	popw	%ds
+	popw	%es
+	iret
