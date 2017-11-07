@@ -19,6 +19,7 @@ void init_keyboard(void);
 
 struct MOUSE_DEC {
   unsigned char buf[3], phase;
+  int x, y, btn;
 };
 
 void enable_mouse(struct MOUSE_DEC *mdec);
@@ -32,7 +33,7 @@ void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
   char mcursor[16 * 16];
-  char msg[256], s[4], keybuf[32];
+  char msg[256], s[16], keybuf[32];
   int mx;
   int my;
   int i;
@@ -80,8 +81,17 @@ void HariMain(void)
 
 	if (mouse_decode(&mdec, i) != 0) {
 	  /* データが3バイト揃ったので表示 */
-	  sprintk(s, "%02X %02X %02X", mdec.buf[0], mdec.buf[1], mdec.buf[2]);
-	  boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 32, 16, 32 + 8 * 8 - 1, 31);
+	  sprintk(s, "[lcr %4d %4d]", mdec.buf[1], mdec.buf[2]);
+	  if ((mdec.btn & 0x01) != 0) {
+	    s[1] = 'L';
+	  }
+	  if ((mdec.btn & 0x02) != 0) {
+	    s[3] = 'R';
+	  }
+	  if ((mdec.btn & 0x04) != 0) {
+	    s[2] = 'C';
+	  }
+	  boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 32, 16, 32 + 15 * 8 - 1, 31);
 	  putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
 	}
       }
@@ -133,8 +143,11 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat)
     return 0;
   } else if (mdec->phase == 1) {
     /* マウスの1バイト目を待っている段階 */
-    mdec->buf[0] = dat;
-    mdec->phase = 2;
+    if ((dat & 0xc8) == 0x08) {
+      /* 正しい1バイト目だった */
+      mdec->buf[0] = dat;
+      mdec->phase = 2;
+    }
     return 0;
   } else if (mdec->phase == 2) {
     /* マウスの2バイト目を待っている段階 */
@@ -142,9 +155,20 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat)
     mdec->phase = 3;
     return 0;
   } else if (mdec->phase == 3) {
-    /* マウスの2バイト目を待っている段階 */
+    /* マウスの3バイト目を待っている段階 */
     mdec->buf[2] = dat;
     mdec->phase = 1;
+
+    mdec->btn = mdec->buf[0] & 0x07;
+    mdec->x = mdec->buf[1];
+    mdec->y = mdec->buf[2];
+    if ((mdec->buf[0] & 0x10) != 0) {
+      mdec->x |= 0xffffff00;
+    }
+    if ((mdec->buf[0] & 0x20) != 0) {
+      mdec->y |= 0xffffff00;
+    }
+    mdec->y = - mdec->y; /* マウスでは、y方向の符号が画面と反対 */
     return 1;
   }
 
