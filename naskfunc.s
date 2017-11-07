@@ -3,6 +3,7 @@
 	.global io_in8, io_in16, io_in32
 	.global io_out8, io_out16, io_out32
 	.global io_load_eflags, io_store_eflags
+	.global load_gdtr, load_idtr
 
 .text
 io_hlt:		# void io_hlt(void)
@@ -67,4 +68,16 @@ io_store_eflags:	# void io_store_eflags(int eflags)
 	movl	4(%esp), %eax
 	push	%eax
 	popf			# pop eflags
+	ret
+
+load_gdtr:	# void load_gdtr(int limit, int addr)
+	movw	4(%esp), %ax	# limit
+	movw	%ax, 6(%esp)
+	lgdt	6(%esp)
+	ret
+
+load_idtr:	# void load_idtr(int limit, int addr)
+	movw	4(%esp), %ax	# limit
+	movw	%ax, 6(%esp)
+	lidt	6(%esp)
 	ret
