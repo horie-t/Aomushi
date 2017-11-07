@@ -3,13 +3,13 @@
 #include "lib/aolib.h"
 #include "bootpack.h"
 
-extern struct KEYBUF keybuf;
+extern struct FIFO8 keyfifo;
 
 void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
   char mcursor[16 * 16];
-  char msg[256], s[4];
+  char msg[256], s[4], keybuf[32];
   int mx;
   int my;
   int i;
@@ -29,21 +29,18 @@ void HariMain(void)
   
   sprintk(msg, "(%d, %d)", mx, my);
   putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, msg);
+
+  fifo8_init(&keyfifo, 32, keybuf);
   
   io_out8(PIC0_IMR, 0xf9); /* PIC1とキーボードを許可(11111001) */
   io_out8(PIC1_IMR, 0xef); /* マウスを許可(11101111) */
   
   for (;;) {
     io_cli();
-    if (keybuf.len == 0) {
+    if (fifo8_status(&keyfifo) == 0) {
       io_stihlt();
     } else {
-      i = keybuf.data[keybuf.next_r];
-      keybuf.len--;
-      keybuf.next_r++;
-      if (keybuf.next_r == 32) {
-	keybuf.next_r = 0;
-      }
+      i = fifo8_get(&keyfifo);
       io_sti();
       
       sprintk(s, "%02X", i);
