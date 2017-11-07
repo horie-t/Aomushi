@@ -17,8 +17,8 @@ aomushi.sys : asmhead.bin bootpack.hrb
 asmhead.bin : asmhead.s
 	$(CC) -nostdlib asmhead.s -o asmhead.bin -T head.ld
 
-bootpack.hrb : bootpack.c naskfunc.s hankaku.c lib/aolib.c
-	$(CC) -march=i486 -m32 -nostdlib bootpack.c naskfunc.s hankaku.c lib/aolib.c -o bootpack.hrb -T hrb.ld
+bootpack.hrb : bootpack.c naskfunc.s hankaku.c dsctbl.c graphic.c lib/aolib.c
+	$(CC) -march=i486 -m32 -nostdlib -o $@ $^ -T hrb.ld
 
 run : $(TARGET)
 	qemu-system-i386 -fda $(TARGET) -boot a
