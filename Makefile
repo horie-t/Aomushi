@@ -17,7 +17,7 @@ aomushi.sys : asmhead.bin bootpack.hrb
 asmhead.bin : asmhead.s
 	$(CC) -nostdlib asmhead.s -o asmhead.bin -T head.ld
 
-bootpack.hrb : bootpack.c naskfunc.s fifo.c hankaku.c dsctbl.c int.c graphic.c lib/aolib.c
+bootpack.hrb : bootpack.c naskfunc.s fifo.c hankaku.c dsctbl.c int.c graphic.c keyboard.c mouse.c lib/aolib.c
 	$(CC) -march=i486 -m32 -nostdlib -o $@ $^ -T hrb.ld
 
 run : $(TARGET)

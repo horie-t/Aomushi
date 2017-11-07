@@ -41,36 +41,6 @@ int fifo8_status(struct FIFO8 *fifo);
 int fifo8_get(struct FIFO8 *fifo);
 int fifo8_put(struct FIFO8 *fifo, unsigned char data);
 
-/* graphic.c*/
-void init_pallete(void);
-void set_pallete(int start, int end, unsigned char *rgb);
-
-void init_mouse_cursor8(char *mouse, char bc);
-
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
-void putblock8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
-void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
-void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, char c, char *s);
-
-void init_screen(unsigned char *vram, int xsize, int ysize);
-
-#define COL8_000000	0
-#define COL8_FF0000	1
-#define COL8_00FF00	2
-#define COL8_FFFF00	3
-#define COL8_0000FF	4
-#define COL8_FF00FF	5
-#define COL8_00FFFF	6
-#define COL8_FFFFFF	7
-#define COL8_C6C6C6	8
-#define COL8_840000	9
-#define COL8_008400	10
-#define COL8_848400	11
-#define COL8_000084	12
-#define COL8_840084	13
-#define COL8_008484	14
-#define COL8_848484	15
-
 /* dsctbl.c */
 struct SEGMENT_DESCRIPTOR {
   short limit_low, base_low;
@@ -126,4 +96,57 @@ void inthandler2c(int *esp);
 #define PIC1_ICW2	0x00a1
 #define PIC1_ICW3	0x00a1
 #define PIC1_ICW4	0x00a1
+
+/* keyboard.c */
+#define PORT_KEYDAT	0x0060
+#define PORT_KEYSTA	0x0064
+#define PORT_KEYCMD	0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE	0x60
+#define KBC_MODE	0x47
+
+void wait_KBC_sendready(void);
+void init_keyboard(void);
+
+/* mouse.c */
+#define KEYCMD_SENDTO_MOUSE	0xd4
+#define MOUSE_ENABLE	0xf4
+
+struct MOUSE_DEC {
+  unsigned char buf[3], phase;
+  int x, y, btn;
+};
+
+void enable_mouse(struct MOUSE_DEC *mdec);
+int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
+
+/* graphic.c*/
+void init_pallete(void);
+void set_pallete(int start, int end, unsigned char *rgb);
+
+void init_mouse_cursor8(char *mouse, char bc);
+
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
+void putblock8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
+void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
+void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, char c, char *s);
+
+void init_screen(unsigned char *vram, int xsize, int ysize);
+
+#define COL8_000000	0
+#define COL8_FF0000	1
+#define COL8_00FF00	2
+#define COL8_FFFF00	3
+#define COL8_0000FF	4
+#define COL8_FF00FF	5
+#define COL8_00FFFF	6
+#define COL8_FFFFFF	7
+#define COL8_C6C6C6	8
+#define COL8_840000	9
+#define COL8_008400	10
+#define COL8_848400	11
+#define COL8_000084	12
+#define COL8_840084	13
+#define COL8_008484	14
+#define COL8_848484	15
 
