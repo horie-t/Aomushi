@@ -33,19 +33,21 @@ void HariMain(void)
   int my;
   int i;
 
+  unsigned char mouse_dbuf[3], mouse_phase;
+
   init_gdtidt();
   init_pic();
   io_sti();	/* IDT/PICの初期化が完了したので、CPUの割り込み禁止を解除 */
   
-  init_pallete();
-  init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-  init_mouse_cursor8(mcursor, COL8_008484);
-
   fifo8_init(&keyfifo, 32, keybuf);
   io_out8(PIC0_IMR, 0xf9); /* PIC1とキーボードを許可(11111001) */
   io_out8(PIC1_IMR, 0xef); /* マウスを許可(11101111) */
   init_keyboard();
   
+  init_pallete();
+  init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+  init_mouse_cursor8(mcursor, COL8_008484);
+
   /* マウス・カーソルを画面中心になるように計算し描画 */
   mx = (binfo->scrnx - 16) / 2;
   my = (binfo->scrny - 28 - 16) / 2;
@@ -55,6 +57,7 @@ void HariMain(void)
   putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, msg);
 
   enable_mouse();
+  mouse_phase = 0;
   
   for (;;) {
     io_cli();
@@ -71,10 +74,29 @@ void HariMain(void)
       } else if (fifo8_status(&mousefifo) != 0) {
 	i = fifo8_get(&mousefifo);
 	io_sti();
-      
-	sprintk(s, "%02X", i);
-	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 32, 16, 47, 31);
-	putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
+
+	if (mouse_phase == 0) {
+	  /* マウスの初期化直後の0xfaを待っている段階 */
+	  if (i == 0xfa) {
+	    mouse_phase = 1;
+	  }
+	} else if (mouse_phase == 1) {
+	  /* マウスの1バイト目を待っている段階 */
+	  mouse_dbuf[0] = i;
+	  mouse_phase = 2;
+	} else if (mouse_phase == 2) {
+	  /* マウスの2バイト目を待っている段階 */
+	  mouse_dbuf[1] = i;
+	  mouse_phase = 3;
+	} else if (mouse_phase == 3) {
+	  /* マウスの2バイト目を待っている段階 */
+	  mouse_dbuf[2] = i;
+	  mouse_phase = 1;
+	  /* データが3バイト揃ったので表示 */
+	  sprintk(s, "%02X %02X %02X", mouse_dbuf[0], mouse_dbuf[1], mouse_dbuf[2]);
+	  boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 32, 16, 32 + 8 * 8 - 1, 31);
+	  putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
+	}
       }
     }
   }
