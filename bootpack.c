@@ -3,6 +3,13 @@
 #include "lib/aolib.h"
 #include "bootpack.h"
 
+#define EFLAGS_AC_BIT		0x00040000
+#define CR0_CACHE_DISABLE	0x60000000
+
+int load_cr0();
+void store_cr0(int cr0);
+unsigned int memtest(unsigned int start, unsigned int end);
+unsigned int memtest_sub(unsigned int start, unsigned int end);
 
 extern struct FIFO8 keyfifo, mousefifo;
 
@@ -41,6 +48,10 @@ void HariMain(void)
   putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, msg);
 
   enable_mouse(&mdec);
+
+  i = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
+  sprintk(msg, "memory %dMB", i);
+  putfonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, msg);
   
   for (;;) {
     io_cli();
@@ -99,3 +110,37 @@ void HariMain(void)
   }
 }
 
+unsigned int memtest(unsigned int start, unsigned int end)
+{
+  char flg486;
+  unsigned int eflg, cr0, i;
+
+  /* 386か、486以降なのかを確認 */
+  eflg = io_load_eflags();
+  eflg |= EFLAGS_AC_BIT;	/* AC-bit = 1 */
+  io_store_eflags(eflg);
+
+  eflg = io_load_eflags();
+  if ((eflg & EFLAGS_AC_BIT) != 0) {
+    /* 386だとAC=1にしても0に戻ってしまうので、ここには来ない */
+    flg486 = 1;
+  }
+  eflg &= ~EFLAGS_AC_BIT;	/* AC-bit = 0 */
+  io_store_eflags(eflg);
+
+  if (flg486 != 0) {
+    cr0 = load_cr0();
+    cr0 |= CR0_CACHE_DISABLE;	/* キャッシュ禁止 */
+    store_cr0(cr0);
+  }
+
+  i = memtest_sub(start, end);
+
+  if (flg486 != 0) {
+    cr0 = load_cr0();
+    cr0 &= ~CR0_CACHE_DISABLE;	/* キャッシュ許可 */
+    store_cr0(cr0);
+  }
+
+  return i;
+}

@@ -2,12 +2,17 @@
 	.extern inthandler21, inthandler2c
 	
 	.global	io_hlt, io_cli, io_sti, io_stihlt
+	
 	.global io_in8, io_in16, io_in32
 	.global io_out8, io_out16, io_out32
+	
 	.global io_load_eflags, io_store_eflags
 	.global load_gdtr, load_idtr
+	.global load_cr0, store_cr0
 
 	.global asm_inthandler21, asm_inthandler27, asm_inthandler2c
+
+	.global memtest_sub
 	
 .text
 io_hlt:		# void io_hlt(void)
@@ -86,6 +91,15 @@ load_idtr:	# void load_idtr(int limit, int addr)
 	lidt	6(%esp)
 	ret
 
+load_cr0:	# int load_cr0()
+	movl	%cr0, %eax
+	ret
+
+store_cr0:	# void store_cr0(int cr0)
+	movl	4(%esp), %eax
+	movl	%eax, %cr0
+	ret
+	
 asm_inthandler21:
 	pushw 	%es
 	pushw	%ds
@@ -133,3 +147,37 @@ asm_inthandler2c:
 	popw	%ds
 	popw	%es
 	iret
+
+memtest_sub:	# unsigned int memtest_sub(unsigned int start, unsigned int end)
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	movl	$0xaa55aa55, %esi	# pat0 = 0xaa55aa55
+	movl	$0x55aa55aa, %edi	# pat1 = 0x55aa55aa
+	movl	16(%esp), %eax		# i = start
+mts_loop:
+	movl	%eax, %ebx
+	addl	$0xffc, %ebx		# p = i + 0xffc
+	movl	(%ebx), %edx		# old = *p
+	movl	%esi, (%ebx)		# *p = pat0
+	xorl	$0xffffffff, (%ebx)	# *p ^= 0xffffffff
+	cmpl	(%ebx), %edi		# if (*p != pat1) goto mts_fin
+	jne	mts_fin
+	xorl	$0xffffffff, (%ebx)	# *p ^= 0xffffffff
+	cmpl	(%ebx), %esi		# if (*p != pat0) goto mts_fin
+	jne	mts_fin
+	movl	%edx, (%ebx)		# *p = old
+	addl	$0x1000, %eax 		# i += 0x1000
+	cmpl	20(%esp), %eax 		# if (i <= end) goto mts_loop
+	jbe	mts_loop
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	ret
+mts_fin:
+	movl	%edx, (%ebx)		# *p = old
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	ret
+	

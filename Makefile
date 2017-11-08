@@ -21,7 +21,7 @@ bootpack.hrb : bootpack.c naskfunc.s fifo.c hankaku.c dsctbl.c int.c graphic.c k
 	$(CC) -march=i486 -m32 -nostdlib -o $@ $^ -T hrb.ld
 
 run : $(TARGET)
-	qemu-system-i386 -fda $(TARGET) -boot a
+	qemu-system-i386 -m 32 -fda $(TARGET) -boot a
 
 .PHONY : clean
 clean :
