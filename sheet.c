@@ -125,12 +125,38 @@ void sheet_refresh(struct SHTCTL *ctl)
   return;
 }
 
+void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1)
+{
+  int h, bx, by, vx, vy;
+  unsigned char *buf, c, *vram = ctl->vram;
+  struct SHEET *sht;
+  for (h = 0; h <= ctl->top; h++) {
+    sht = ctl->sheets[h];
+    buf = sht->buf;
+    for (by = 0; by < sht->bysize; by++) {
+      vy = sht->vy0 + by;
+      for (bx = 0; bx < sht->bxsize; bx++) {
+	vx = sht->vx0 + bx;
+	if (vx0 <= vx && vx <= vx1 && vy0 <= vy && vy <= vy1) {
+	  c = buf[by * sht->bxsize + bx];
+	  if (c != sht->col_inv) {
+	    vram[vy * ctl->xsize + vx] = c;
+	  }
+	}
+      }
+    }
+  }
+  return;
+}
+
 void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0)
 {
+  int old_vx0 = sht->vx0, old_vy0 = sht->vy0;
   sht->vx0 = vx0;
   sht->vy0 = vy0;
-  if (sht->height >= 0) {	/* もしも表示中なら */
-    sheet_refresh(ctl);		/* 新しい下敷きの情報に沿って画面を描き直す */
+  if (sht->height >= 0) {	/* もしも表示中なら、新しい下敷き情報に従って画面を描き直す */
+    sheet_refreshsub(ctl, old_vx0, old_vy0, old_vx0 + sht->bxsize, old_vy0 + sht->bysize);
+    sheet_refreshsub(ctl, vx0, vy0, vx0 + sht->bxsize, vy0 + sht->bysize);	
   }
   return;
 }

@@ -90,7 +90,7 @@ void HariMain(void)
 	  if ((mdec.btn & 0x04) != 0) {
 	    s[2] = 'C';
 	  }
-	  boxfill8(buf_back, binfo->scrnx, COL8_000000, 32, 16, 32 + 15 * 8 - 1, 31);
+	  boxfill8(buf_back, binfo->scrnx, COL8_008484, 32, 16, 32 + 15 * 8 - 1, 31);
 	  putfonts8_asc(buf_back, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
 
 	  /* マウス・カーソルの移動 */
