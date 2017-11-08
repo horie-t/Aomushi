@@ -54,11 +54,11 @@ void HariMain(void)
   sheet_updown(shtctl, sht_mouse, 1);
 
   sprintk(msg, "(%d, %d)", mx, my);
-  putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, msg);
+  putfonts8_asc(buf_back, binfo->scrnx, 0, 0, COL8_FFFFFF, msg);
   
   sprintk(msg, "memory %dMB   free : %dKB",
 	  memtotal / (1024 * 1024), memman_total(memman) / 1024);
-  putfonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, msg);
+  putfonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, msg);
   sheet_refresh(shtctl);
   
   for (;;) {
