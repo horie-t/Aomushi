@@ -29,6 +29,7 @@ void load_idtr(int limit, int addr);
 int load_cr0();
 void store_cr0(int cr0);
 
+void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
@@ -121,6 +122,10 @@ void inthandler2c(int *esp);
 #define PIC1_ICW2	0x00a1
 #define PIC1_ICW3	0x00a1
 #define PIC1_ICW4	0x00a1
+
+/* timer.c */
+void init_pit(void);
+void inthandler20(int *esp);
 
 /* keyboard.c */
 #define PORT_KEYDAT	0x0060

@@ -1,5 +1,5 @@
 .code32
-	.extern inthandler21, inthandler2c
+	.extern inthandler21, inthandler21, inthander27, inthandler2c
 	
 	.global	io_hlt, io_cli, io_sti, io_stihlt
 	
@@ -10,7 +10,7 @@
 	.global load_gdtr, load_idtr
 	.global load_cr0, store_cr0
 
-	.global asm_inthandler21, asm_inthandler27, asm_inthandler2c
+	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
 
 	.global memtest_sub
 	
@@ -99,6 +99,22 @@ store_cr0:	# void store_cr0(int cr0)
 	movl	4(%esp), %eax
 	movl	%eax, %cr0
 	ret
+
+asm_inthandler20:
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movl	%esp, %eax
+	push	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler20
+	popl	%eax
+	popa
+	popw	%ds
+	popw	%es
+	iret
 	
 asm_inthandler21:
 	pushw 	%es
