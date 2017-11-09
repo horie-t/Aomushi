@@ -124,6 +124,10 @@ void inthandler2c(int *esp);
 #define PIC1_ICW4	0x00a1
 
 /* timer.c */
+struct TIMERCTL {
+  unsigned int count;
+};
+
 void init_pit(void);
 void inthandler20(int *esp);
 
