@@ -123,7 +123,7 @@ void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1)
     buf = sht->buf;
     /* vx0〜vy1を使ってbx0〜by1を逆算する */
     bx0 = vx0 - sht->vx0;
-    by0 = vy0 - sht->vx0;
+    by0 = vy0 - sht->vy0;
     bx1 = vx1 - sht->vx0;
     by1 = vy1 - sht->vy0;
     if (bx0 < 0) { bx0 = 0; }
