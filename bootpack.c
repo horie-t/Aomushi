@@ -73,6 +73,8 @@ void HariMain(void)
   struct SHEET *sht_back, *sht_win, *sht_mouse;
   unsigned char *buf_back, *buf_win, buf_mouse[256];
 
+  unsigned int count = 0;
+
   init_gdtidt();
   init_pic();
   io_sti();	/* IDT/PICの初期化が完了したので、CPUの割り込み禁止を解除 */
@@ -97,16 +99,14 @@ void HariMain(void)
   sht_win = sheet_alloc(shtctl);
   
   buf_back = (unsigned char *)memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
-  buf_win = (unsigned char *)memman_alloc_4k(memman, 160 * 68);
+  buf_win = (unsigned char *)memman_alloc_4k(memman, 160 * 52);
   sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, -1);
   sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);
-  sheet_setbuf(sht_win, buf_win, 160, 68, -1); /* 透明色なし */
+  sheet_setbuf(sht_win, buf_win, 160, 52, -1); /* 透明色なし */
   
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
   init_mouse_cursor8(buf_mouse, 99); /* 背景色は99 */
-  make_window8(buf_win, 160, 68, "window");
-  putfonts8_asc(buf_win, 160, 24, 23, COL8_000000, "Welcome to");
-  putfonts8_asc(buf_win, 160, 24, 44, COL8_000000, "  Haribote-OS!");
+  make_window8(buf_win, 160, 52, "counter");
   
   sheet_slide(sht_back, 0, 0);
   mx = (binfo->scrnx - 16) / 2;	/* 画面中央になるように座標計算 */
@@ -127,9 +127,15 @@ void HariMain(void)
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
   
   for (;;) {
+    count++;
+    sprintk(s, "%010d", count);
+    boxfill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
+    putfonts8_asc(buf_win, 160, 40, 28, COL8_000000, s);
+    sheet_refresh(sht_win, 40, 28, 120, 44);
+    
     io_cli();
     if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0) {
-      io_stihlt();
+      io_sti();
     } else {
       if (fifo8_status(&keyfifo) != 0) {
 	i = fifo8_get(&keyfifo);
