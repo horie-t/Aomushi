@@ -169,36 +169,6 @@ struct MOUSE_DEC {
 void enable_mouse(struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
-/* graphic.c*/
-void init_pallete(void);
-void set_pallete(int start, int end, unsigned char *rgb);
-
-void init_mouse_cursor8(char *mouse, char bc);
-
-void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
-void putblock8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
-void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
-void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, char c, char *s);
-
-void init_screen8(unsigned char *vram, int xsize, int ysize);
-
-#define COL8_000000	0
-#define COL8_FF0000	1
-#define COL8_00FF00	2
-#define COL8_FFFF00	3
-#define COL8_0000FF	4
-#define COL8_FF00FF	5
-#define COL8_00FFFF	6
-#define COL8_FFFFFF	7
-#define COL8_C6C6C6	8
-#define COL8_840000	9
-#define COL8_008400	10
-#define COL8_848400	11
-#define COL8_000084	12
-#define COL8_840084	13
-#define COL8_008484	14
-#define COL8_848484	15
-
 /* sheet.c */
 struct SHEET {
   unsigned char *buf;
@@ -223,3 +193,35 @@ void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, in
 void sheet_refreshmap(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, int h0);
 void sheet_slide(struct SHEET *sht, int vx0, int vy0);
 void sheet_free(struct SHEET *sht);
+
+/* graphic.c*/
+void init_pallete(void);
+void set_pallete(int start, int end, unsigned char *rgb);
+
+void init_mouse_cursor8(char *mouse, char bc);
+
+void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
+void putblock8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
+void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
+void putfonts8_asc(unsigned char *vram, int xsize, int x, int y, char c, char *s);
+void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, int l);
+
+void init_screen8(unsigned char *vram, int xsize, int ysize);
+
+#define COL8_000000	0
+#define COL8_FF0000	1
+#define COL8_00FF00	2
+#define COL8_FFFF00	3
+#define COL8_0000FF	4
+#define COL8_FF00FF	5
+#define COL8_00FFFF	6
+#define COL8_FFFFFF	7
+#define COL8_C6C6C6	8
+#define COL8_840000	9
+#define COL8_008400	10
+#define COL8_848400	11
+#define COL8_000084	12
+#define COL8_840084	13
+#define COL8_008484	14
+#define COL8_848484	15
+
