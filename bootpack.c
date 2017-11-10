@@ -196,14 +196,14 @@ void HariMain(void)
       } else if (i == 3) {
 	putfonts8_asc(buf_back, binfo->scrnx, 0, 80, COL8_FFFFFF, "3[sec]");
 	sheet_refresh(sht_back, 0, 80, 56, 96);
-      } else {
-	if (i != 0) {
-	  timer_init(timer3, &fifo, 0); /* 次は0を */
-	  boxfill8(buf_back, binfo->scrnx, COL8_FFFFFF, 8, 96, 15, 111);
-	} else {
-	  timer_init(timer3, &fifo, 1); /* 次は1を */
-	  boxfill8(buf_back, binfo->scrnx, COL8_008484, 8, 96, 15, 111);
-	}
+      } else if (i == 1) {
+	timer_init(timer3, &fifo, 0); /* 次は0を */
+	boxfill8(buf_back, binfo->scrnx, COL8_FFFFFF, 8, 96, 15, 111);
+	timer_settime(timer3, 50);
+	sheet_refresh(sht_back, 8, 96, 16, 112);
+      } else if (i == 0) {
+	timer_init(timer3, &fifo, 1); /* 次は1を */
+	boxfill8(buf_back, binfo->scrnx, COL8_008484, 8, 96, 15, 111);
 	timer_settime(timer3, 50);
 	sheet_refresh(sht_back, 8, 96, 16, 112);
       }
