@@ -139,7 +139,7 @@ void inthandler2c(int *esp);
 struct TIMER {
   unsigned int timeout, flags;
   struct FIFO32 *fifo;
-  unsigned char data;
+  int data;
 };
 
 struct TIMERCTL {
