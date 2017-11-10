@@ -45,6 +45,16 @@ int fifo8_status(struct FIFO8 *fifo);
 int fifo8_get(struct FIFO8 *fifo);
 int fifo8_put(struct FIFO8 *fifo, unsigned char data);
 
+struct FIFO32 {
+  int *buf;
+  int p, q, size, free, flags;
+};
+  
+void fifo32_init(struct FIFO32 *fifo, int size, int *buf);
+int fifo32_status(struct FIFO32 *fifo);
+int fifo32_get(struct FIFO32 *fifo);
+int fifo32_put(struct FIFO32 *fifo, int data);
+
 /* dsctbl.c */
 struct SEGMENT_DESCRIPTOR {
   short limit_low, base_low;
@@ -128,7 +138,7 @@ void inthandler2c(int *esp);
 
 struct TIMER {
   unsigned int timeout, flags;
-  struct FIFO8 *fifo;
+  struct FIFO32 *fifo;
   unsigned char data;
 };
 
@@ -143,7 +153,7 @@ void inthandler20(int *esp);
 
 struct TIMER *timer_alloc(void);
 void timer_free(struct TIMER *timer);
-void timer_init(struct TIMER *timer, struct FIFO8 *fifo, unsigned char data);
+void timer_init(struct TIMER *timer, struct FIFO32 *fifo, int data);
 void timer_settime(struct TIMER *timer, unsigned int timeout);
 
 /* keyboard.c */
@@ -155,7 +165,7 @@ void timer_settime(struct TIMER *timer, unsigned int timeout);
 #define KBC_MODE	0x47
 
 void wait_KBC_sendready(void);
-void init_keyboard(void);
+void init_keyboard(struct FIFO32 *fifo, int data0);
 
 /* mouse.c */
 #define KEYCMD_SENDTO_MOUSE	0xd4
@@ -166,7 +176,7 @@ struct MOUSE_DEC {
   int x, y, btn;
 };
 
-void enable_mouse(struct MOUSE_DEC *mdec);
+void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* sheet.c */
