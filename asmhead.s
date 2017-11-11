@@ -11,21 +11,67 @@
 	.equ	SCRNX, 	0x0ff4	# 解像度のX(screen x)
 	.equ	SCRNY, 	0x0ff6	# 解像度のY(screen y)
 	.equ	VRAM, 	0x0ff8	# グラフィック・メモリの開始アドレス
+
+	.equ 	VBEMODE, 0x105	#
 	
 .code16
 .text
-
 	# 画面モードの切り替え
-	movb	$0x13, %al	# VGAグラフィックス、320 x 200 x 8bitカラー
-	movb	$0x00, %ah
+	# VBE存在確認
+	movw	$0x9000, %ax
+	movw	%ax, %es
+	movw	$0, %di
+	movw	$0x4f00, %ax
 	int	$0x10
+	cmpw	$0x004f, %ax
+	jne	scrn320
+
+	# VBEのバージョンチェック
+	movw	%es:4(%di), %ax
+	cmpw	$0x0200, %ax	# バージョン2.0以上でないといけない
+	jb	scrn320
+
+	# 画面モードの情報を取得
+	movw	$VBEMODE, %cx
+	movw	$0x4f01, %ax
+	int	$0x10
+#	cmpw	0x004f, %ax	# 自作本には記載があるが、なぜか、320の方に行ってしまう。
+#	jne	scrn320
+
+	# 画面モード情報の確認
+	cmpb	$8, %es:0x19(%di)
+	jne	scrn320
+	cmpb	$4, %es:0x1b(%di)
+	jne	scrn320
+	movw	%es:0x00(%di), %ax
+	andw	0x0080, %ax
+	jz	scrn320		# モード属性のbit7が0だったので諦める
 	
+	movw	$VBEMODE+0x4000, %bx	# VBEの640x480x8bitカラー
+	movw	$0x4f02, %ax
+	int	$0x10
+
 	# 画面モードをメモ
 	movb	$8, (VMODE)
-	movw	$320, (SCRNX)
-	movw	$200, (SCRNY)
-	movl	$0x000a0000, (VRAM)
+	movw	%es:0x12(%di), %ax
+	movw	%ax, (SCRNX)
+	movw	%es:0x14(%di), %ax
+	movw	%ax, (SCRNY)
+	movl	%es:0x28(%edi), %eax
+	movl	%eax, (VRAM)
+	jmp	keystatus
 
+scrn320:	
+	movb    $0x13, %al      # VGAグラフィックス、320 x 200 x 8bitカラー
+	movb    $0x00, %ah	
+	int	$0x10
+        # 画面モードをメモ
+        movb    $8, (VMODE)
+	movw    $320, (SCRNX)
+	movw    $200, (SCRNY)
+        movl    $0x000a0000, (VRAM)
+
+keystatus:	
 	# キーボードのLED状態をBIOSに教えてもらう
 	movb	$0x02, %ah
 	int	$0x16		# keyboard BIOS
