@@ -1,3 +1,5 @@
+#include "lib/aolib.h"
+
 /* asmhead.s */
 struct BOOTINFO {
   char cyls, leds, vmode, reserve;
@@ -137,6 +139,7 @@ void inthandler2c(int *esp);
 #define MAX_TIMER	500
 
 struct TIMER {
+  struct TIMER *next;
   unsigned int timeout, flags;
   struct FIFO32 *fifo;
   int data;
@@ -144,7 +147,7 @@ struct TIMER {
 
 struct TIMERCTL {
   unsigned int count, next, using;
-  struct TIMER *timers[MAX_TIMER];
+  struct TIMER *t0;
   struct TIMER timers0[MAX_TIMER];
 };
 
@@ -235,3 +238,5 @@ void init_screen8(unsigned char *vram, int xsize, int ysize);
 #define COL8_008484	14
 #define COL8_848484	15
 
+void debug_message(char *s, int l);
+void debug_message2(char *s, int l);
