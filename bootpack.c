@@ -1,6 +1,5 @@
 #include <stdarg.h>
 
-#include "lib/aolib.h"
 #include "bootpack.h"
 
 extern struct FIFO8 keyfifo, mousefifo;
@@ -58,6 +57,21 @@ void make_window8(unsigned char *buf, int xsize, int ysize, char *title)
   return;
 }
 
+struct SHEET *sht_back = 0;
+
+void debug_message(char *s, int l)
+{
+  if (sht_back != 0) {
+    putfonts8_asc_sht(sht_back, 160, 0, COL8_FFFFFF, COL8_008484, s, l);
+  }
+}
+void debug_message2(char *s, int l)
+{
+  if (sht_back != 0) {
+    putfonts8_asc_sht(sht_back, 160, 16, COL8_FFFFFF, COL8_008484, s, l);
+  }
+}
+
 void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -74,7 +88,8 @@ void HariMain(void)
   struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 
   struct SHTCTL *shtctl;
-  struct SHEET *sht_back, *sht_win, *sht_mouse;
+  /* struct SHEET *sht_back, *sht_win, *sht_mouse; */
+  struct SHEET *sht_win, *sht_mouse;
   unsigned char *buf_back, *buf_win, buf_mouse[256];
 
 
@@ -84,6 +99,8 @@ void HariMain(void)
   
   fifo32_init(&fifo, 128, fifobuf);
   init_pit();
+  init_keyboard(&fifo, 128);
+  enable_mouse(&fifo, 512, &mdec);
   io_out8(PIC0_IMR, 0xf8); /* PITとPIC1とキーボードを許可(1111100) */
   io_out8(PIC1_IMR, 0xef); /* マウスを許可(11101111) */
 
@@ -98,9 +115,6 @@ void HariMain(void)
   timer3 = timer_alloc();
   timer_init(timer3, &fifo, 1);
   timer_settime(timer3, 50);
-  
-  init_keyboard(&fifo, 128);
-  enable_mouse(&fifo, 512, &mdec);
   
   memtotal = memtest(0x00400000, 0xbfffffff);
   memman_init(memman);
