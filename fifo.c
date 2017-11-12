@@ -15,7 +15,7 @@ void fifo8_init(struct FIFO8 *fifo, int size, unsigned char *buf)
 
 int fifo8_put(struct FIFO8 *fifo, unsigned char data)
 {
-  if (fifo->free = 0) {
+  if (fifo->free == 0) {
     /* 空きがなくてあふれた */
     fifo->flags |= FLAGS_OVERRUN;
     return -1;
@@ -63,7 +63,7 @@ void fifo32_init(struct FIFO32 *fifo, int size, int *buf)
 
 int fifo32_put(struct FIFO32 *fifo, int data)
 {
-  if (fifo->free = 0) {
+  if (fifo->free == 0) {
     /* 空きがなくてあふれた */
     fifo->flags |= FLAGS_OVERRUN;
     return -1;
