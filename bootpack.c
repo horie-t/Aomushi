@@ -57,21 +57,6 @@ void make_window8(unsigned char *buf, int xsize, int ysize, char *title)
   return;
 }
 
-struct SHEET *sht_back = 0;
-
-void debug_message(char *s, int l)
-{
-  if (sht_back != 0) {
-    putfonts8_asc_sht(sht_back, 160, 0, COL8_FFFFFF, COL8_008484, s, l);
-  }
-}
-void debug_message2(char *s, int l)
-{
-  if (sht_back != 0) {
-    putfonts8_asc_sht(sht_back, 160, 16, COL8_FFFFFF, COL8_008484, s, l);
-  }
-}
-
 void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -81,17 +66,24 @@ void HariMain(void)
   struct TIMER *timer, *timer2, *timer3;
   int mx, my;
   int i;
-  
+
   struct MOUSE_DEC mdec;
 
   unsigned int memtotal;
   struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 
   struct SHTCTL *shtctl;
-  /* struct SHEET *sht_back, *sht_win, *sht_mouse; */
-  struct SHEET *sht_win, *sht_mouse;
+  struct SHEET *sht_back, *sht_win, *sht_mouse;
   unsigned char *buf_back, *buf_win, buf_mouse[256];
 
+  static char keytable[0x54] = {
+      0,   0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^',   0,   0,
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[',   0,   0, 'A', 'S',
+    'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':',   0,   0, ']', 'Z', 'X', 'C', 'V',
+    'B', 'N', 'M', ',', '.', '/',   0, '*',   0, ' ',   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
+    '2', '3', '0', '.'
+  };
 
   init_gdtidt();
   init_pic();
@@ -159,7 +151,7 @@ void HariMain(void)
   for (;;) {
     io_cli();
     if (fifo32_status(&fifo) == 0) {
-      io_sti();
+      io_stihlt();
     } else {
       i = fifo32_get(&fifo);
       io_sti();
@@ -167,8 +159,13 @@ void HariMain(void)
       if (256 <= i && i <= 511) { /* キーボード・データ */
 	sprintk(s, "%02X", i - 256);
 	putfonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
-	if (i == 0x1e + 256) {
-	  putfonts8_asc_sht(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, "A", 1);
+
+	if (i < 256 + 0x54) {
+	  if (keytable[i - 256] != 0) {
+	    s[0] = keytable[i - 256];
+	    s[1] = 0;
+	    putfonts8_asc_sht(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, s, 1);
+	  }
 	}
       } else if (512 <= i && i <= 767) {
 	if (mouse_decode(&mdec, i - 512) != 0) {

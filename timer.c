@@ -17,7 +17,6 @@ void init_pit(void)
   io_out8(PIT_CNT0, 0x9c);
   io_out8(PIT_CNT0, 0x2e);
   timerctl.count = 0;
-  timerctl.next = 0xffffffff;	/* 最初は動作中のタイマーがないので */
   for (i = 0; i < MAX_TIMER; i++) {
     timerctl.timers0[i].flags = 0; /* 未使用 */
   }
@@ -26,7 +25,6 @@ void init_pit(void)
   t->flags = TIMER_FLAGS_USING;
   timerctl.t0 = t;
   timerctl.next = 0xffffffff;
-  timerctl.using = 1;
   return;
 }
 
@@ -59,15 +57,12 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 {
   int e;
   struct TIMER *t, *s;
-  char msg[128];
   
   timer->timeout = timeout + timerctl.count;
   timer->flags = TIMER_FLAGS_USING;
 
   e = io_load_eflags();
   io_cli();
-  
-  timerctl.using++;
   
   t = timerctl.t0;
   if (timer->timeout <= t->timeout) {
@@ -89,7 +84,6 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
       /* sとtの間に入れる事になった */
       s->next = timer;
       timer->next = t;
-      debug_message("settime in mid", 16);
       io_store_eflags(e);
       return;
     }
@@ -100,10 +94,7 @@ void timer_settime(struct TIMER *timer, unsigned int timeout)
 
 void inthandler20(int *esp)
 {
-  int i;
   struct TIMER *timer;
-
-  char s[128];
   
   io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 */
   timerctl.count++;
@@ -112,11 +103,9 @@ void inthandler20(int *esp)
   }
 
   timer = timerctl.t0;	/* とりあえず先頭の番地をtimerに代入 */
-  for (i = 0; i < timerctl.using; i++) {
+  for (;;) {
     /* timersのタイマーは全て動作中のものなので、flagsを確認しない */
     if (timer->timeout > timerctl.count) {
-      sprintk(s, "break t_out: %d", timer->timeout);
-      debug_message2(s, 20);
       break;
     }
     /* タイムアウト */
@@ -125,11 +114,7 @@ void inthandler20(int *esp)
     timer = timer->next;
   }
   
-  timerctl.using -= i;
-  /* 新しいずらし */
   timerctl.t0 = timer;
-
-  /* timerctl.nextの設定 */
   timerctl.next = timerctl.t0->timeout;
 
   return;

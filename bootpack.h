@@ -146,7 +146,7 @@ struct TIMER {
 };
 
 struct TIMERCTL {
-  unsigned int count, next, using;
+  unsigned int count, next;
   struct TIMER *t0;
   struct TIMER timers0[MAX_TIMER];
 };
@@ -237,6 +237,3 @@ void init_screen8(unsigned char *vram, int xsize, int ysize);
 #define COL8_840084	13
 #define COL8_008484	14
 #define COL8_848484	15
-
-void debug_message(char *s, int l);
-void debug_message2(char *s, int l);

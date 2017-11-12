@@ -37,4 +37,3 @@ void inthandler21(int *esp)
   fifo32_put(keyfifo, data + keydata0);
   return;
 }
-
