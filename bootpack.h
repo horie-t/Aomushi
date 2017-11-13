@@ -167,6 +167,8 @@ void timer_settime(struct TIMER *timer, unsigned int timeout);
 
 /* mtask.c */
 #define MAX_TASKS	1000	/* 最大タスク数 */
+#define MAX_TASKS_LV	100
+#define MAX_TASKLEVELS	10
 #define TASK_GDT0	3	/* TSSをGDTの何番から割り当てるのか */
 
 struct TSS32 {
@@ -178,14 +180,20 @@ struct TSS32 {
 
 struct TASK {
   int sel, flags;		/* selはGDT番号の事 */
-  int priority;
+  int level, priority;
   struct TSS32 tss;
 };
 
-struct TASKCTL {
+struct TASKLEVEL {
   int running;			/* 動作しているタスクの数 */
   int now;			/* 現在動作しているタスクがどれだか分かるようにするための変数 */
-  struct TASK *tasks[MAX_TASKS];
+  struct TASK *tasks[MAX_TASKS_LV];
+};
+
+struct TASKCTL {
+  int now_lv;			/* 現在動作中のレベル */
+  char lv_change;		/* 次回のタスク・スイッチのときにレベルを変えた方がいいかどうか */
+  struct TASKLEVEL level[MAX_TASKLEVELS];
   struct TASK tasks0[MAX_TASKS];
 };
 
@@ -193,7 +201,7 @@ extern struct TIMER *task_timer;
 
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
-void task_run(struct TASK *task, int priority);
+void task_run(struct TASK *task, int level, int priority);
 void task_sleep(struct TASK *task);
 void task_switch(void);
 

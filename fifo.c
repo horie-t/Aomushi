@@ -78,7 +78,7 @@ int fifo32_put(struct FIFO32 *fifo, int data)
 
   if (fifo->task != 0) {
     if (fifo->task->flags != 2) { /* タスクが寝ていたら */
-      task_run(fifo->task, 0);	  /* 起こしてあげる */
+      task_run(fifo->task, -1, 0);	  /* 起こしてあげる */
     }
   }
   return 0;
