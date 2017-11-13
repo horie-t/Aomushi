@@ -83,7 +83,7 @@ void task_b_main(struct SHEET *sht_back)
   
   putfonts8_asc_sht(sht_back, 0, 144, COL8_FFFFFF, COL8_008484, "t_b_main", 8);
   
-  fifo32_init(&fifo, 128, fifobuf);
+  fifo32_init(&fifo, 128, fifobuf, 0);
   
   timer_put = timer_alloc();
   timer_init(timer_put, &fifo, 1);
@@ -115,7 +115,7 @@ void HariMain(void)
   char msg[256], s[40];
   struct TIMER *timer, *timer2, *timer3;
 
-  struct TASK *task_b;
+  struct TASK *task_a, *task_b;
   
   int mx, my;
   int i;
@@ -143,7 +143,7 @@ void HariMain(void)
   init_pic();
   io_sti();	/* IDT/PICの初期化が完了したので、CPUの割り込み禁止を解除 */
   
-  fifo32_init(&fifo, 128, fifobuf);
+  fifo32_init(&fifo, 128, fifobuf, 0);
   init_pit();
   init_keyboard(&fifo, 128);
   enable_mouse(&fifo, 512, &mdec);
@@ -207,7 +207,9 @@ void HariMain(void)
   putfonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, msg);
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
-  task_init(memman);
+  task_a = task_init(memman);
+  fifo.task = task_a;
+  
   task_b = task_alloc();
   task_b->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
   task_b->tss.eip = (int) &task_b_main;
@@ -223,7 +225,8 @@ void HariMain(void)
   for (;;) {
     io_cli();
     if (fifo32_status(&fifo) == 0) {
-      io_stihlt();
+      task_sleep(task_a);
+      io_sti();
     } else {
       i = fifo32_get(&fifo);
       io_sti();

@@ -54,9 +54,10 @@ int fifo8_put(struct FIFO8 *fifo, unsigned char data);
 struct FIFO32 {
   int *buf;
   int p, q, size, free, flags;
+  struct TASK *task;
 };
   
-void fifo32_init(struct FIFO32 *fifo, int size, int *buf);
+void fifo32_init(struct FIFO32 *fifo, int size, int *buf, struct TASK *task);
 int fifo32_status(struct FIFO32 *fifo);
 int fifo32_get(struct FIFO32 *fifo);
 int fifo32_put(struct FIFO32 *fifo, int data);
@@ -192,6 +193,7 @@ extern struct TIMER *task_timer;
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
 void task_run(struct TASK *task);
+void task_sleep(struct TASK *task);
 void task_switch(void);
 
 /* keyboard.c */
