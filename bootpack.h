@@ -173,6 +173,11 @@ void timer_free(struct TIMER *timer);
 void timer_init(struct TIMER *timer, struct FIFO32 *fifo, int data);
 void timer_settime(struct TIMER *timer, unsigned int timeout);
 
+/* mtask.c */
+extern struct TIMER *mt_timer;
+void mt_init(void);
+void mt_taskswitch(void);
+
 /* keyboard.c */
 #define PORT_KEYDAT	0x0060
 #define PORT_KEYSTA	0x0064
@@ -251,3 +256,4 @@ void init_screen8(unsigned char *vram, int xsize, int ysize);
 #define COL8_840084	13
 #define COL8_008484	14
 #define COL8_848484	15
+
