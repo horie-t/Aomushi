@@ -15,7 +15,7 @@
 
 	.global memtest_sub
 
-	.global taskswitch4
+	.global taskswitch3, taskswitch4
 	
 .text
 io_hlt:		# void io_hlt(void)
@@ -202,6 +202,10 @@ mts_fin:
 	popl	%ebx
 	popl	%esi
 	popl	%edi
+	ret
+	
+taskswitch3:	# void taskswitch3(void)
+	ljmpl	$3*8, $0
 	ret
 	
 taskswitch4:	# void taskswitch4(void)

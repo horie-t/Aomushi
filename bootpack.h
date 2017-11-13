@@ -38,6 +38,7 @@ void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
 
+void taskswitch3(void);
 void taskswitch4(void);
 
 /* fifo.c */
