@@ -140,15 +140,6 @@ void inthandler2c(int *esp);
 #define PIC1_ICW3	0x00a1
 #define PIC1_ICW4	0x00a1
 
-/* task */
-
-struct TSS32 {
-  int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
-  int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
-  int es, cs, ss, ds, fs, gs;
-  int ldtr, iomap;
-};
-
 /* timer.c */
 #define MAX_TIMER	500
 
@@ -174,9 +165,34 @@ void timer_init(struct TIMER *timer, struct FIFO32 *fifo, int data);
 void timer_settime(struct TIMER *timer, unsigned int timeout);
 
 /* mtask.c */
-extern struct TIMER *mt_timer;
-void mt_init(void);
-void mt_taskswitch(void);
+#define MAX_TASKS	1000	/* 最大タスク数 */
+#define TASK_GDT0	3	/* TSSをGDTの何番から割り当てるのか */
+
+struct TSS32 {
+  int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+  int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+  int es, cs, ss, ds, fs, gs;
+  int ldtr, iomap;
+};
+
+struct TASK {
+  int sel, flags;		/* selはGDT番号の事 */
+  struct TSS32 tss;
+};
+
+struct TASKCTL {
+  int running;			/* 動作しているタスクの数 */
+  int now;			/* 現在動作しているタスクがどれだか分かるようにするための変数 */
+  struct TASK *tasks[MAX_TASKS];
+  struct TASK tasks0[MAX_TASKS];
+};
+
+extern struct TIMER *task_timer;
+
+struct TASK *task_init(struct MEMMAN *memman);
+struct TASK *task_alloc(void);
+void task_run(struct TASK *task);
+void task_switch(void);
 
 /* keyboard.c */
 #define PORT_KEYDAT	0x0060
