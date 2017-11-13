@@ -9,10 +9,13 @@
 	.global io_load_eflags, io_store_eflags
 	.global load_gdtr, load_idtr
 	.global load_cr0, store_cr0
+	.global load_tr
 
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
 
 	.global memtest_sub
+
+	.global taskswitch4
 	
 .text
 io_hlt:		# void io_hlt(void)
@@ -98,6 +101,10 @@ load_cr0:	# int load_cr0()
 store_cr0:	# void store_cr0(int cr0)
 	movl	4(%esp), %eax
 	movl	%eax, %cr0
+	ret
+
+load_tr:	# void load_tr(int tr)
+	ltr	4(%esp)
 	ret
 
 asm_inthandler20:
@@ -197,3 +204,7 @@ mts_fin:
 	popl	%edi
 	ret
 	
+taskswitch4:	# void taskswitch4(void)
+	ljmpl	$4*8, $0
+	ret
+

@@ -31,10 +31,14 @@ void load_idtr(int limit, int addr);
 int load_cr0();
 void store_cr0(int cr0);
 
+void load_tr(int tr);
+
 void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
+
+void taskswitch4(void);
 
 /* fifo.c */
 struct FIFO8 {
@@ -71,7 +75,7 @@ struct GATE_DESCRIPTOR {
 };
 
 void init_gdtidt(void);
-void set_segmdsc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
 #define ADR_IDT		0x0026f800
@@ -86,6 +90,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
 
+#define AR_TSS32	0x0089
 #define AR_INTGATE32	0x008e
 
 /* memory.c */
@@ -134,6 +139,15 @@ void inthandler2c(int *esp);
 #define PIC1_ICW2	0x00a1
 #define PIC1_ICW3	0x00a1
 #define PIC1_ICW4	0x00a1
+
+/* task */
+
+struct TSS32 {
+  int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+  int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+  int es, cs, ss, ds, fs, gs;
+  int ldtr, iomap;
+};
 
 /* timer.c */
 #define MAX_TIMER	500
