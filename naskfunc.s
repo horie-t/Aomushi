@@ -15,7 +15,7 @@
 
 	.global memtest_sub
 
-	.global taskswitch3, taskswitch4
+	.global farjmp
 	
 .text
 io_hlt:		# void io_hlt(void)
@@ -203,12 +203,8 @@ mts_fin:
 	popl	%esi
 	popl	%edi
 	ret
-	
-taskswitch3:	# void taskswitch3(void)
-	ljmpl	$3*8, $0
-	ret
-	
-taskswitch4:	# void taskswitch4(void)
-	ljmpl	$4*8, $0
+
+farjmp:		# void farjmp(int eip, int cs)
+	ljmpl	*4(%esp)
 	ret
 
