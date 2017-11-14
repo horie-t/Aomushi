@@ -182,7 +182,7 @@ void HariMain(void)
   
   task_a = task_init(memman);
   fifo.task = task_a;
-  task_run(task_a, 1, 0);
+  task_run(task_a, 1, 2);
 
   /* sht_back */
   sht_back = sheet_alloc(shtctl);
@@ -219,7 +219,7 @@ void HariMain(void)
   cursor_c = COL8_FFFFFF;
 
   timer = timer_alloc();
-  timer_init(timer, &fifo, 10);
+  timer_init(timer, &fifo, 1);
   timer_settime(timer, 50);
   
   /* sht_mouse */
