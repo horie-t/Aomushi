@@ -88,7 +88,30 @@ void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c)
   return;
 }
 
-void console_task(struct SHEET *sheet)
+int cons_newline(int cursor_y, struct SHEET *sheet)
+{
+  int x, y;
+  if (cursor_y < 28 + 112) {
+    cursor_y += 16;		/* 次の行へ */
+  } else {
+    /* スクロール */
+    for (y = 28; y < 28 + 112; y++) {
+      for (x = 8; x < 8 + 240; x++) {
+	sheet->buf[x + y * sheet->bxsize] = sheet->buf[x + (y + 16) * sheet->bxsize];
+      }
+    }
+    for (y = 28 + 112; y < 28 + 128; y++) {
+      for (x = 8; x < 8 + 240; x++) {
+	sheet->buf[x + y * sheet->bxsize] = COL8_000000;
+      }
+    }
+    sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
+  }
+
+  return cursor_y;
+}
+
+void console_task(struct SHEET *sheet, unsigned int memtotal)
 {
   struct TIMER *timer;
   struct TASK *task = task_now();
@@ -97,7 +120,8 @@ void console_task(struct SHEET *sheet)
   int x, y;
   int fifobuf[128];
   int cursor_x = 16, cursor_y = 28, cursor_c = -1;
-  char s[2];
+  char s[2], cmdline[30];
+  struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 
   fifo32_init(&task->fifo, 128, fifobuf, task);
 
@@ -150,21 +174,24 @@ void console_task(struct SHEET *sheet)
 	  /* Enter */
 	  /* カーソルをスペースで消す */
 	  putfonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, " ", 1);
-	  if (cursor_y < 28 + 112) {
-	    cursor_y += 16;
-	  } else {
-	    /* スクロール */
-	    for (y = 28; y < 28 + 112; y++) {
-	      for (x = 8; x < 8 + 240; x++) {
-		sheet->buf[x + y * sheet->bxsize] = sheet->buf[x + (y + 16) * sheet->bxsize];
-	      }
-	    }
-	    for (y = 28 + 112; y < 28 + 128; y++) {
-	      for (x = 8; x < 8 + 240; x++) {
-		sheet->buf[x + y * sheet->bxsize] = COL8_000000;
-	      }
-	    }
-	    sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
+	  
+	  cmdline[cursor_x / 8 - 2] = 0;
+	  cursor_y = cons_newline(cursor_y, sheet);
+	  /* コマンド実行 */
+	  if (cmdline[0] == 'm' && cmdline[1] == 'e' && cmdline[2] == 'm' && cmdline[3] == 0) {
+	    /* memコマンド */
+	    sprintk(s, "total   %dMB", memtotal / (1024 * 1024));
+	    putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
+	    cursor_y = cons_newline(cursor_y, sheet);
+	    sprintk(s, "free %dKB", memman_total(memman) / 1024);
+	    putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
+	    cursor_y = cons_newline(cursor_y, sheet);
+	    cursor_y = cons_newline(cursor_y, sheet);
+	  } else if (cmdline[0] != 0) {
+	    /* コマンドではなく、さらに空行でもない */
+	    putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "Bad command.", 12);
+	    cursor_y = cons_newline(cursor_y, sheet);
+	    cursor_y = cons_newline(cursor_y, sheet);
 	  }
 	  /* プロンプト表示 */
 	  putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, ">", 1);
@@ -175,6 +202,7 @@ void console_task(struct SHEET *sheet)
 	    /* 一文字表示してから、カーソルを１つ進める */
 	    s[0] = i - 256;
 	    s[1] = 0;
+	    cmdline[cursor_x / 8 - 2] = i - 256;
 	    putfonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, s, 1);
 	    cursor_x += 8;
 	  }
@@ -272,7 +300,7 @@ void HariMain(void)
   make_window8(buf_cons, 256, 165, "console", 0);
   make_textbox8(sht_cons, 8, 28, 240, 128, COL8_000000);
   task_cons = task_alloc();
-  task_cons->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
+  task_cons->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12;
   task_cons->tss.eip = (int) &console_task;
   task_cons->tss.es = 1 * 8;
   task_cons->tss.cs = 2 * 8;
@@ -281,6 +309,7 @@ void HariMain(void)
   task_cons->tss.fs = 1 * 8;
   task_cons->tss.gs = 1 * 8;
   *((int *) (task_cons->tss.esp + 4)) = (int) sht_cons;
+  *((int *) (task_cons->tss.esp + 8)) = memtotal;
   task_run(task_cons, 2, 2);	/* level=2, priority=2 */
   
   /* sht_win */
