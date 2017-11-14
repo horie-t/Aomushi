@@ -7,6 +7,8 @@ all : $(TARGET)
 $(TARGET) : ipl.bin aomushi.sys
 	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
 	mcopy -i $(TARGET) aomushi.sys ::
+	mcopy -i $(TARGET) ipl10.s ::
+	mcopy -i $(TARGET) Makefile ::
 
 ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld

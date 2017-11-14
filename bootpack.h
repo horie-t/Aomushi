@@ -8,6 +8,7 @@ struct BOOTINFO {
 };
 
 #define ADR_BOOTINFO	0x00000ff0
+#define ADR_DISKIMG	0x00100000
 
 /* naskfunc.s */
 void io_hlt(void);
@@ -286,3 +287,10 @@ void init_screen8(unsigned char *vram, int xsize, int ysize);
 #define COL8_008484	14
 #define COL8_848484	15
 
+/* FAT */
+struct FILEINFO {
+  unsigned char name[8], ext[3], type;
+  char reserve[10];
+  unsigned short time, date, clustno;
+  unsigned int size;
+};
