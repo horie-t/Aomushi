@@ -314,14 +314,6 @@ void HariMain(void)
   sheet_updown(sht_win, 2);
   sheet_updown(sht_mouse, 3);
 
-  sprintk(msg, "(%d, %d)", mx, my);
-  putfonts8_asc(buf_back, binfo->scrnx, 0, 0, COL8_FFFFFF, msg);
-  
-  sprintk(msg, "memory %dMB   free : %dKB",
-	  memtotal / (1024 * 1024), memman_total(memman) / 1024);
-  putfonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, msg);
-  sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
-
   /* 最初にキーボード状態と食い違いがないように、設定しておく事にする */
   fifo32_put(&keycmd, KEYCMD_LED);
   fifo32_put(&keycmd, key_leds);
@@ -343,9 +335,6 @@ void HariMain(void)
       io_sti();
 
       if (256 <= i && i <= 511) { /* キーボード・データ */
-	sprintk(s, "%02X", i - 256);
-	putfonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
-
 	if (i < 256 + 0x80) { 	/* キーコードを文字コードに変換 */
 	  if (key_shift == 0) {
 	    s[0] = keytable0[i - 256];
@@ -456,19 +445,6 @@ void HariMain(void)
 	sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
       } else if (512 <= i && i <= 767) {
 	if (mouse_decode(&mdec, i - 512) != 0) {
-	  /* データが3バイト揃ったので表示 */
-	  sprintk(s, "[lcr %4d %4d]", mdec.buf[1], mdec.buf[2]);
-	  if ((mdec.btn & 0x01) != 0) {
-	    s[1] = 'L';
-	  }
-	  if ((mdec.btn & 0x02) != 0) {
-	    s[3] = 'R';
-	  }
-	  if ((mdec.btn & 0x04) != 0) {
-	    s[2] = 'C';
-	  }
-	  putfonts8_asc_sht(sht_back, 32, 16, COL8_FFFFFF, COL8_008484, s, 15);
-
 	  /* マウス・カーソルの移動 */
 	  mx += mdec.x;
 	  my += mdec.y;
@@ -484,8 +460,6 @@ void HariMain(void)
 	  if (my > binfo->scrny - 1) {
 	    my = binfo->scrny - 1;
 	  }
-	  sprintk(msg, "(%3d, %3d)", mx, my);
-	  putfonts8_asc_sht(sht_back, 0, 0, COL8_FFFFFF, COL8_008484, msg, 10);
 	  sheet_slide(sht_mouse, mx, my); /* sheet_refreshを含む */
 
 	  if (mdec.btn & 0x01 != 0) {
