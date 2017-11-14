@@ -1,11 +1,11 @@
 #include "aolib.h"
 
-int sprintk_dec(char *str, int num, int zero_padding, int width);
-int sprintk_hex(char *str, unsigned int num, int capital, int zero_padding, int width);
-int sprintk_str(char *str, char *src);
-int sprintk_char(char *str, int c);
+int sprintf_dec(char *str, int num, int zero_padding, int width);
+int sprintf_hex(char *str, unsigned int num, int capital, int zero_padding, int width);
+int sprintf_str(char *str, char *src);
+int sprintf_char(char *str, int c);
 
-int sprintk(char *str, char *fmt, ...)
+int sprintf(char *str, char *fmt, ...)
 {
   int *arg = (int *)(&str + 2);
   int str_len = 0;
@@ -38,19 +38,19 @@ int sprintk(char *str, char *fmt, ...)
       convert_len = 0;
       switch (*fmt) {
       case 'd':
-      	convert_len = sprintk_dec(str, *arg++, zero_padding, width);
+      	convert_len = sprintf_dec(str, *arg++, zero_padding, width);
       	break;
       case 'x':
-      	convert_len = sprintk_hex(str, (unsigned int)*arg++, 0, zero_padding, width);
+      	convert_len = sprintf_hex(str, (unsigned int)*arg++, 0, zero_padding, width);
       	break;
       case 'X':
-      	convert_len = sprintk_hex(str, (unsigned int)*arg++, 1, zero_padding, width);
+      	convert_len = sprintf_hex(str, (unsigned int)*arg++, 1, zero_padding, width);
       	break;
       case 's':
-      	convert_len = sprintk_str(str, (char *)*arg++);
+      	convert_len = sprintf_str(str, (char *)*arg++);
       	break;
       case 'c':
-      	convert_len = sprintk_char(str, *arg++);
+      	convert_len = sprintf_char(str, *arg++);
       	break;
       default:
       	str_len++;
@@ -69,7 +69,7 @@ int sprintk(char *str, char *fmt, ...)
   return str_len;
 }
 
-int sprintk_dec(char *str, int num, int zero_padding, int width)
+int sprintf_dec(char *str, int num, int zero_padding, int width)
 {
   char *dst;
   
@@ -110,7 +110,7 @@ int sprintk_dec(char *str, int num, int zero_padding, int width)
   return dst - str;
 }
 
-int sprintk_hex(char *str, unsigned int num, int capital, int zero_padding, int width)
+int sprintf_hex(char *str, unsigned int num, int capital, int zero_padding, int width)
 {
   char *dst;
   
@@ -147,7 +147,7 @@ int sprintk_hex(char *str, unsigned int num, int capital, int zero_padding, int 
   return dst - str;
 }
 
-int sprintk_str(char *str, char *src)
+int sprintf_str(char *str, char *src)
 {
   char *dst;
 
@@ -159,7 +159,7 @@ int sprintk_str(char *str, char *src)
   return dst - str;
 }
 
-int sprintk_char(char *str, int c)
+int sprintf_char(char *str, int c)
 {
   *str = c;
   

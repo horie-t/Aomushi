@@ -180,10 +180,10 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 	  /* コマンド実行 */
 	  if (cmdline[0] == 'm' && cmdline[1] == 'e' && cmdline[2] == 'm' && cmdline[3] == 0) {
 	    /* memコマンド */
-	    sprintk(s, "total   %dMB", memtotal / (1024 * 1024));
+	    sprintf(s, "total   %dMB", memtotal / (1024 * 1024));
 	    putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
 	    cursor_y = cons_newline(cursor_y, sheet);
-	    sprintk(s, "free %dKB", memman_total(memman) / 1024);
+	    sprintf(s, "free %dKB", memman_total(memman) / 1024);
 	    putfonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
 	    cursor_y = cons_newline(cursor_y, sheet);
 	    cursor_y = cons_newline(cursor_y, sheet);

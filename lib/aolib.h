@@ -1,3 +1,3 @@
 
 
-int sprintk(char *str, char *fmt, ...);
+int sprintf(char *str, char *fmt, ...);
