@@ -167,33 +167,58 @@ int sprintf_char(char *str, int c)
 }
 
 
-int strcmp(char *a, char *b)
+int strcmp(char *s1, char *s2)
 {
-  while (*a) {
-    if (*a == *b) {
+  while (*s1) {
+    if (*s1 == *s2) {
       /* 次の文字へ */
-      a++;
-      b++;
+      s1++;
+      s2++;
       continue;
     }
     
-    if (*b == 0) {
-      /* 前の文字まで同じ状態で、bの方が先に終端に来たら、aの方が辞書順で後。 */
+    if (*s2 == 0) {
+      /* 前の文字まで同じ状態で、s2の方が先に終端に来たら、s1の方が辞書順で後。 */
       return 1;
     }
       
-    if (*a < *b) {
+    if (*s1 < *s2) {
       return -1;
-    } else if (*a > *b) {
+    } else if (*s1 > *s2) {
       return 1;
     }
   }
 
-  if (*b == 0) {
+  if (*s2 == 0) {
     return 0;
   } else {
     return -1;
   }
 }
+
+int strncmp(char *s1, char *s2, unsigned int n)
+{
+  while (*s1 && n-- > 0) {
+    if (*s1 == *s2) {
+      /* 次の文字へ */
+      s1++;
+      s2++;
+      continue;
+    }
     
-    
+    if (*s2 == 0) {
+      /* 前の文字まで同じ状態で、s2の方が先に終端に来たら、s1の方が辞書順で後。 */
+      return 1;
+    }
+      
+    if (*s1 < *s2) {
+      return -1;
+    } else if (*s1 > *s2) {
+      return 1;
+    }
+
+    n--;
+  }
+
+  return 0;
+}
