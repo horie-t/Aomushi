@@ -38,8 +38,10 @@ void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
+void asm_cons_putchar(void);
 
 void farjmp(int eip, int cs);
+void farcall(int eip, int cs);
 
 /* fifo.c */
 struct FIFO8 {

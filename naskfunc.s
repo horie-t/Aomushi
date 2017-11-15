@@ -1,5 +1,9 @@
+
+	.equ	CONSOLE, 0x0fec		# コンソール構造体のアドレス
+	
 .code32
 	.extern inthandler21, inthandler21, inthander27, inthandler2c
+	.extern cons_putchar
 	
 	.global	io_hlt, io_cli, io_sti, io_stihlt
 	
@@ -12,10 +16,12 @@
 	.global load_tr
 
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
+	.global asm_cons_putchar
 
 	.global memtest_sub
 
 	.global farjmp
+	.global farcall
 	
 .text
 io_hlt:		# void io_hlt(void)
@@ -171,6 +177,16 @@ asm_inthandler2c:
 	popw	%es
 	iret
 
+asm_cons_putchar:
+	sti
+	push	$1
+	andl	$0xff, %eax
+	pushl	%eax
+	pushl	(CONSOLE)
+	call	cons_putchar
+	addl	$12, %esp
+	iret
+	
 memtest_sub:	# unsigned int memtest_sub(unsigned int start, unsigned int end)
 	pushl	%edi
 	pushl	%esi
@@ -206,5 +222,9 @@ mts_fin:
 
 farjmp:		# void farjmp(int eip, int cs)
 	ljmpl	*4(%esp)
+	ret
+
+farcall:	# void farcall(int eip, int cs)
+	lcall	*4(%esp)
 	ret
 

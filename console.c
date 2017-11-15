@@ -16,6 +16,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
   cons.cur_x = 8;
   cons.cur_y = 28;
   cons.cur_c = -1;
+  *((int *)0x0fec) = (int)&cons;
 
   fifo32_init(&task->fifo, 128, fifobuf, task);
 
@@ -279,13 +280,14 @@ void cmd_hlt(struct CONSOLE *cons, int *fat)
     p = (char *)memman_alloc_4k(memman, finfo->size);
     file_loadfile(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
     set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER);
-    farjmp(0, 1003 * 8);
+    farcall(0, 1003 * 8);
     memman_free_4k(memman, (int)p, finfo->size);
   } else {
     /* ファイルが見つからなかった場合 */
     putfonts8_asc_sht(cons->sht, 8, cons->cur_y, COL8_FFFFFF, COL8_000000, "File not found.", 15);
     cons_newline(cons);
   }
+  cons_newline(cons);
 
   return;
 }
