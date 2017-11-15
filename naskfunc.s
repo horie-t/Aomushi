@@ -12,6 +12,7 @@
 	.global load_tr
 
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
+	.global asm_cons_putchar
 
 	.global memtest_sub
 
@@ -170,6 +171,15 @@ asm_inthandler2c:
 	popw	%ds
 	popw	%es
 	iret
+
+asm_cons_putchar:
+	pushl	$1
+	and	$0xff, %eax	# AHやEAXの上位を0にして、EAXに文字コードが入った状態にする。
+	pushl	%eax
+	pushl	(0x0fec)	# メモリの内容を読み込んでその値をpushする
+	call	cons_putchar
+	add	$12, %esp	# スタックに積んだデータを捨てる。
+	lret
 
 memtest_sub:	# unsigned int memtest_sub(unsigned int start, unsigned int end)
 	pushl	%edi
