@@ -287,10 +287,22 @@ void init_screen8(unsigned char *vram, int xsize, int ysize);
 #define COL8_008484	14
 #define COL8_848484	15
 
-/* FAT */
+/* window.c */
+void make_window8(unsigned char *buf, int xsize, int ysize, char *title, char act);
+void make_wtitle8(unsigned char *buf, int xsize, char *title, char act);
+void make_textbox8(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
+
+/* file.c */
 struct FILEINFO {
   unsigned char name[8], ext[3], type;
   char reserve[10];
   unsigned short time, date, clustno;
   unsigned int size;
 };
+
+void file_read_fat(int *fat, unsigned char *img);
+void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
+
+/* console.c */
+void console_task(struct SHEET *sheet, unsigned int memtotal);
+int cons_newline(int cursor_y, struct SHEET *sheet);
