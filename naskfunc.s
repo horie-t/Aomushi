@@ -17,6 +17,7 @@
 	.global load_cr0, store_cr0
 	.global load_tr
 
+	.global asm_inthandler0d
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
 	.global asm_cons_putchar
 	.global asm_hrb_api
@@ -117,6 +118,63 @@ load_tr:	# void load_tr(int tr)
 	ltr	4(%esp)
 	ret
 
+asm_inthandler0d:
+	sti
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movw	%ss, %ax
+	cmpw	$1*8, %ax
+	jne	1f
+	
+	movl	%esp, %eax
+	push	%ss
+	pushl	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler0d
+	addl	$8, %esp	
+	popa
+	popw	%ds
+	popw	%es
+	iret
+1:	# アプリが動いている時に割り込まれた
+	cli
+	movl	$1*8, %eax
+	movw	%ax, %ds	# とりあえずDSだけOS用にする
+	movl	(OS_ESP), %ecx	# OSのESP
+	addl	$-8, %ecx
+	movw	%ss, 4(%ecx)	# 割り込まれた時のSSを保存
+	movl	%esp, (%ecx)	# 割り込まれた時のESPを保存
+	movw	%ax, %ss
+	movw	%ax, %es
+	movl	%esp, %ecx
+	sti
+	call	inthandler20
+	cli
+	cmpl	$0, %eax
+	jne	2f
+	popl	%ecx
+	popl	%eax
+	movw	%ax, %ss
+	movl	%ecx, %esp
+	popa
+	popw	%ds
+	popw	%es
+	iret
+2:	# アプリを異常終了させる事にした
+	movl	$1*8, %eax
+	movw	%ax, %es
+	movw	%ax, %ss
+	movw	%ax, %ds
+	movw	%ax, %fs
+	movw	%ax, %gs
+	movl	(OS_ESP), %esp	# start_appの時のESPに無理矢理戻す
+	sti			# 割り込み可能に戻す
+	popa
+	ret
+	
 asm_inthandler20:
 	pushw 	%es
 	pushw	%ds

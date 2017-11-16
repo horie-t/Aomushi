@@ -34,6 +34,7 @@ void store_cr0(int cr0);
 
 void load_tr(int tr);
 
+void asm_inthandler0d(void);
 void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler27(void);
@@ -128,6 +129,7 @@ struct KEYBUF {
 };
 
 void init_pic(void);
+int inthandler0d(int *esp);
 void inthandler21(int *esp);
 void inthandler27(int *esp);
 void inthandler2c(int *esp);
