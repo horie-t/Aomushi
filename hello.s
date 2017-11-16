@@ -1,8 +1,17 @@
 .arch i486
-
-	movl	$2, %edx
-	movl	$msg, %ebx
+.text
+	
+	movl	$msg, %ecx
+	movl	$1, %edx
+putloop:
+	movb	%cs:(%ecx), %al
+	cmpb	$0, %al
+	je	fin
 	int	$0x40
-	lret
+	addl	$1, %ecx
+	jmp	putloop
+fin:
+	movl	$4, %edx
+	int	$0x40
 msg:
 	.string	"hello"

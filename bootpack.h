@@ -41,7 +41,7 @@ void asm_inthandler27(void);
 void asm_inthandler2c(void);
 void asm_cons_putchar(void);
 void asm_hrb_api(void);
-void start_app(int eip, int cs, int esp, int ds);
+void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 
 void farjmp(int eip, int cs);
 void farcall(int eip, int cs);
@@ -129,7 +129,7 @@ struct KEYBUF {
 };
 
 void init_pic(void);
-int inthandler0d(int *esp);
+int *inthandler0d(int *esp);
 void inthandler21(int *esp);
 void inthandler27(int *esp);
 void inthandler2c(int *esp);
@@ -327,4 +327,4 @@ void cmd_cls(struct CONSOLE *cons);
 void cmd_dir(struct CONSOLE *cons);
 void cmd_type(struct CONSOLE *cons, int *fat, char *cmdline);
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline);
-void hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
+int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
