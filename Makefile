@@ -4,13 +4,14 @@ TARGET = aomushi.img
 
 all : $(TARGET)
 
-$(TARGET) : ipl.bin aomushi.sys hello.hrb hello3.hrb
+$(TARGET) : ipl.bin aomushi.sys hello.hrb hello3.hrb crack1.hrb
 	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
 	mcopy -i $(TARGET) aomushi.sys ::
 	mcopy -i $(TARGET) ipl10.s ::
 	mcopy -i $(TARGET) Makefile ::
 	mcopy -i $(TARGET) hello.hrb ::
 	mcopy -i $(TARGET) hello3.hrb ::
+	mcopy -i $(TARGET) crack1.hrb ::
 
 ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
@@ -28,7 +29,10 @@ hello.hrb : hello.s
 	$(CC) -nostdlib hello.s -o hello.hrb -T app.ld
 
 hello3.hrb : hello3.c a_nask.s
-	$(CC) -march=i486 -m32 -nostdlib -o $@ $^  -T hrb.ld
+	$(CC) -march=i486 -m32 -nostdlib -o $@ $^ -T hrb.ld
+
+crack1.hrb : crack1.c
+	$(CC) -march=i486 -m32 -nostdlib -o $@ $^ -T hrb.ld
 
 run : $(TARGET)
 	qemu-system-i386 -m 32 -fda $(TARGET) -boot a

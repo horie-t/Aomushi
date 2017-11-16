@@ -1,5 +1,6 @@
 
 	.equ	CONSOLE, 0x0fec		# コンソール構造体のアドレス
+	.equ	OS_ESP, 0xfe4		# OS用のESP
 	
 .code32
 	.extern inthandler21, inthandler21, inthander27, inthandler2c
@@ -19,6 +20,7 @@
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
 	.global asm_cons_putchar
 	.global asm_hrb_api
+	.global start_app
 
 	.global memtest_sub
 
@@ -119,45 +121,117 @@ asm_inthandler20:
 	pushw 	%es
 	pushw	%ds
 	pusha
-	movl	%esp, %eax
-	push	%eax
 	movw	%ss, %ax
-	movw	%ax, %ds
-	movw	%ax, %es
-	call	inthandler20
-	popl	%eax
-	popa
-	popw	%ds
-	popw	%es
-	iret
+	cmpw	$1*8, %ax
+	jne	1f
 	
-asm_inthandler21:
-	pushw 	%es
-	pushw	%ds
-	pusha
 	movl	%esp, %eax
+	push	%ss
 	pushl	%eax
 	movw	%ss, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
-	call	inthandler21
-	popl 	%eax
+	call	inthandler20
+	addl	$8, %esp	
+	popa
+	popw	%ds
+	popw	%es
+	iret
+1:	# アプリが動いている時に割り込まれた
+	movl	$1*8, %eax
+	movw	%ax, %ds	# とりあえずDSだけOS用にする
+	movl	(OS_ESP), %ecx	# OSのESP
+	addl	$-8, %ecx
+	movw	%ss, 4(%ecx)	# 割り込まれた時のSSを保存
+	movl	%esp, (%ecx)	# 割り込まれた時のESPを保存
+	movw	%ax, %ss
+	movw	%ax, %es
+	movl	%esp, %ecx
+	call	inthandler20
+	popl	%ecx
+	popl	%eax
+	movw	%ss, %ax
+	movl	%esp, %ecx
 	popa
 	popw	%ds
 	popw	%es
 	iret
 
+asm_inthandler21:
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movw	%ss, %ax
+	cmpw	$1*8, %ax
+	jne	1f
+	
+	movl	%esp, %eax
+	push	%ss
+	pushl	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler21
+	addl	$8, %esp	
+	popa
+	popw	%ds
+	popw	%es
+	iret
+1:	# アプリが動いている時に割り込まれた
+	movl	$1*8, %eax
+	movw	%ax, %ds	# とりあえずDSだけOS用にする
+	movl	(OS_ESP), %ecx	# OSのESP
+	addl	$-8, %ecx
+	movw	%ss, 4(%ecx)	# 割り込まれた時のSSを保存
+	movl	%esp, (%ecx)	# 割り込まれた時のESPを保存
+	movw	%ax, %ss
+	movw	%ax, %es
+	movl	%esp, %ecx
+	call	inthandler21
+	popl	%ecx
+	popl	%eax
+	movw	%ss, %ax
+	movl	%esp, %ecx
+	popa
+	popw	%ds
+	popw	%es
+	iret
+	
 asm_inthandler27:
 	pushw 	%es
 	pushw	%ds
 	pusha
+	movw	%ss, %ax
+	cmpw	$1*8, %ax
+	jne	1f
+	
 	movl	%esp, %eax
+	push	%ss
 	pushl	%eax
 	movw	%ss, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
 	call	inthandler27
-	popl 	%eax
+	addl	$8, %esp	
+	popa
+	popw	%ds
+	popw	%es
+	iret
+1:	# アプリが動いている時に割り込まれた
+	movl	$1*8, %eax
+	movw	%ax, %ds	# とりあえずDSだけOS用にする
+	movl	(OS_ESP), %ecx	# OSのESP
+	addl	$-8, %ecx
+	movw	%ss, 4(%ecx)	# 割り込まれた時のSSを保存
+	movl	%esp, (%ecx)	# 割り込まれた時のESPを保存
+	movw	%ax, %ss
+	movw	%ax, %es
+	movl	%esp, %ecx
+	call	inthandler27
+	popl	%ecx
+	popl	%eax
+	movw	%ss, %ax
+	movl	%esp, %ecx
 	popa
 	popw	%ds
 	popw	%es
@@ -167,18 +241,42 @@ asm_inthandler2c:
 	pushw 	%es
 	pushw	%ds
 	pusha
+	movw	%ss, %ax
+	cmpw	$1*8, %ax
+	jne	1f
+	
 	movl	%esp, %eax
+	push	%ss
 	pushl	%eax
 	movw	%ss, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
 	call	inthandler2c
-	popl 	%eax
+	addl	$8, %esp	
 	popa
 	popw	%ds
 	popw	%es
 	iret
-
+1:	# アプリが動いている時に割り込まれた
+	movl	$1*8, %eax
+	movw	%ax, %ds	# とりあえずDSだけOS用にする
+	movl	(OS_ESP), %ecx	# OSのESP
+	addl	$-8, %ecx
+	movw	%ss, 4(%ecx)	# 割り込まれた時のSSを保存
+	movl	%esp, (%ecx)	# 割り込まれた時のESPを保存
+	movw	%ax, %ss
+	movw	%ax, %es
+	movl	%esp, %ecx
+	call	inthandler2c
+	popl	%ecx
+	popl	%eax
+	movw	%ss, %ax
+	movl	%esp, %ecx
+	popa
+	popw	%ds
+	popw	%es
+	iret
+	
 asm_cons_putchar:
 	sti
 	push	$1
@@ -190,13 +288,82 @@ asm_cons_putchar:
 	iret
 
 asm_hrb_api:
-	sti
+	# 最初から割り込み禁止になっている
+	pushw	%ds
+	pushw	%es
 	pusha			# 保存のためpush
-	pusha			# hrb_apiに渡すためpush
+	movl	$1*8, %eax
+	movw	%ax, %ds	# とりあえずDSだけOS用にする
+	movl	(OS_ESP), %ecx	# OS用のEIP
+	addl	$-40, %ecx
+	movl	%esp, 32(%ecx)	# アプリのESPを保存
+	movw	%ss, 36(%ecx)	# アプリのSSを保存
+
+	# pushaした値をシステムのスタックにコピーする
+	movl	(%esp), %edx
+	movl	4(%esp), %ebx
+	movl	%edx, (%ecx) 	# hrb_apiに渡すためコピー
+	movl	%ebx, 4(%ecx) 	# hrb_apiに渡すためコピー
+	movl	8(%esp), %edx
+	movl	12(%esp), %ebx
+	movl	%edx, 8(%ecx)	# hrb_apiに渡すためコピー
+	movl	%ebx, 12(%ecx)	# hrb_apiに渡すためコピー
+	movl	16(%esp), %edx
+	movl	20(%esp), %ebx
+	movl	%edx, 16(%ecx)	# hrb_apiに渡すためコピー
+	movl	%ebx, 20(%ecx)	# hrb_apiに渡すためコピー
+	movl	24(%esp), %edx
+	movl	28(%esp), %ebx
+	movl	%edx, 24(%ecx)	# hrb_apiに渡すためコピー
+	movl	%ebx, 28(%ecx)	# hrb_apiに渡すためコピー
+
+	movw	%ax, %es	# 残りのセグメントレジスタもOS用にする
+	movw	%ax, %ss
+	movl	%ecx, %esp
+	sti			# やっと割り込み許可
+
 	call	hrb_api
-	addl	$32, %esp
+
+	movl	32(%esp), %ecx	# アプリのESPを思い出す
+	movl	36(%esp), %eax	# アプリのSSを思い出す
+	cli
+	movw	%ax, %ss
+	movl	%ecx, %esp
 	popa
+	popw	%es
+	popw	%ds
 	iret
+
+start_app:	# void start_app(int eip, int cs, int esp, int ds)
+	pusha			# 32ビット・レジスタを全部保存しておく
+	movl	36(%esp), %eax	# アプリ用のEIP
+	movl	40(%esp), %ecx	# アプリ用のCS
+	movl	44(%esp), %edx	# アプリ用のESP
+	movl	48(%esp), %ebx	# アプリ用のDS/SS
+	movl	%esp, (OS_ESP)	# OS用のESP
+	cli			# 切り替え中に割り込みが来て欲しくないので、禁止
+	movw	%bx, %es
+	movw	%bx, %ss
+	movw	%bx, %ds
+	movw	%bx, %fs
+	movw	%bx, %gs
+	movl	%edx, %esp
+	sti			# 切り替え完了なので、割り込み可能に戻す
+	pushl	%ecx		# far-callのためpush(cs)
+	pushl	%eax		# far-callのためpush(eip)
+	lcall	*(%esp)		# アプリを呼び出す
+	# アプリが終了するとここに帰ってくる
+	movl 	$1*8, %eax	# OS用のDS/SS
+	cli			# また切り替えるので、割り込み禁止
+	movw	%ax, %es
+	movw	%ax, %ss
+	movw	%ax, %ds
+	movw	%ax, %fs
+	movw	%ax, %gs
+	movl	(OS_ESP), %esp
+	sti			# 切り替え完了なので、割り込み可能に戻す
+	popa
+	ret
 	
 memtest_sub:	# unsigned int memtest_sub(unsigned int start, unsigned int end)
 	pushl	%edi
