@@ -4,6 +4,7 @@
 .code32
 	.extern inthandler21, inthandler21, inthander27, inthandler2c
 	.extern cons_putchar
+	.extern hrb_api
 	
 	.global	io_hlt, io_cli, io_sti, io_stihlt
 	
@@ -17,6 +18,7 @@
 
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
 	.global asm_cons_putchar
+	.global asm_hrb_api
 
 	.global memtest_sub
 
@@ -185,6 +187,15 @@ asm_cons_putchar:
 	pushl	(CONSOLE)
 	call	cons_putchar
 	addl	$12, %esp
+	iret
+
+asm_hrb_api:
+	sti
+	pusha			# 保存のためpush
+	pusha			# hrb_apiに渡すためpush
+	call	hrb_api
+	addl	$32, %esp
+	popa
 	iret
 	
 memtest_sub:	# unsigned int memtest_sub(unsigned int start, unsigned int end)

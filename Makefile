@@ -24,7 +24,7 @@ bootpack.hrb : bootpack.c naskfunc.s fifo.c hankaku.c dsctbl.c int.c memory.c ti
 	$(CC) -march=i486 -m32 -nostdlib -o $@ $^ -T hrb.ld
 
 hello.hrb : hello.s
-	$(CC) -nostdlib hello.s -o hello.hrb -T binary.ld
+	$(CC) -nostdlib hello.s -o hello.hrb -T app.ld
 
 run : $(TARGET)
 	qemu-system-i386 -m 32 -fda $(TARGET) -boot a
