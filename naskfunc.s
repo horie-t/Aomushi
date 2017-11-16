@@ -179,12 +179,14 @@ asm_inthandler2c:
 
 asm_cons_putchar:
 	sti
+	pusha
 	push	$1
 	andl	$0xff, %eax
 	pushl	%eax
 	pushl	(CONSOLE)
 	call	cons_putchar
 	addl	$12, %esp
+	popa
 	iret
 	
 memtest_sub:	# unsigned int memtest_sub(unsigned int start, unsigned int end)
@@ -227,4 +229,3 @@ farjmp:		# void farjmp(int eip, int cs)
 farcall:	# void farcall(int eip, int cs)
 	lcall	*4(%esp)
 	ret
-

@@ -1,14 +1,15 @@
 .arch i486
 
-	movb 	$'h', %al
-	int 	$0x40
-	movb 	$'e', %al
-	int 	$0x40
-	movb 	$'l', %al
-	int 	$0x40
-	movb 	$'l', %al
-	int 	$0x40
-	movb 	$'o', %al
-	int 	$0x40
+	movl	$msg, %ecx
+putloop:
+	movb	%cs:(%ecx), %al
+	cmpb	$0, %al
+	je	fin
+	int	$0x40
+	addl	$1, %ecx
+	jmp	putloop
+fin:
 	lret
+msg:
+	.string	"hello"
 	
