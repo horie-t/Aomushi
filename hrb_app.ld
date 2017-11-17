@@ -20,6 +20,7 @@ SECTIONS
         *(.data)
         *(.rodata*)
         *(.bss)
+	*(COMMON)
     }
 
     /DISCARD/ : { *(.eh_frame) }
