@@ -4,7 +4,7 @@ TARGET = aomushi.img
 
 all : $(TARGET)
 
-$(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello5.hrb
+$(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello5.hrb winhelo.hrb
 	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
 	mcopy -i $(TARGET) aomushi.sys ::
 	mcopy -i $(TARGET) ipl10.s ::
@@ -14,6 +14,7 @@ $(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello
 	mcopy -i $(TARGET) hello3.hrb ::
 	mcopy -i $(TARGET) hello4.hrb ::
 	mcopy -i $(TARGET) hello5.hrb ::
+	mcopy -i $(TARGET) winhelo.hrb ::
 
 ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
@@ -40,6 +41,9 @@ hello4.hrb : hello4.c a_nask.s
 	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 hello5.hrb : hello5.s
+	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
+
+winhelo.hrb : winhelo.c a_nask.s
 	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 run : $(TARGET)

@@ -72,6 +72,7 @@ void HariMain(void)
   
   init_pallete();
   shtctl = shtctl_init(memman, binfo->vram, binfo->scrnx, binfo->scrny);
+  *((int *) 0x0fe4) = (int) shtctl;
   
   task_a = task_init(memman);
   fifo.task = task_a;
