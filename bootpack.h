@@ -42,6 +42,7 @@ void asm_inthandler27(void);
 void asm_inthandler2c(void);
 void asm_cons_putchar(void);
 void asm_hrb_api(void);
+void asm_end_app(void);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 
 void farjmp(int eip, int cs);

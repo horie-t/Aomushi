@@ -22,6 +22,7 @@
 	.global asm_cons_putchar
 	.global asm_hrb_api
 	.global start_app
+	.global asm_end_app
 
 	.global memtest_sub
 
@@ -130,7 +131,7 @@ asm_inthandler0c:
 	movw	%ax, %es
 	call	inthandler0c
 	cmpl	$0, %eax
-	jne	end_app
+	jne	asm_end_app
 	popl	%eax
 	popa
 	popw	%ds
@@ -150,7 +151,7 @@ asm_inthandler0d:
 	movw	%ax, %es
 	call	inthandler0d
 	cmpl	$0, %eax
-	jne	end_app
+	jne	asm_end_app
 	popl	%eax
 	popa
 	popw	%ds
@@ -243,14 +244,16 @@ asm_hrb_api:
 	movw	%ax, %es
 	call	hrb_api
 	cmpl	$0, %eax	# EAXが0でなければアプリ異常処理
-	jne	end_app
+	jne	asm_end_app
 	addl	$32, %esp
 	popa
 	popw	%es
 	popw	%ds
 	iret
-end_app:
+
+asm_end_app:
 	movl	(%eax), %esp	# eaxはtss.esp0の番地
+	movl	$0, 4(%eax)
 	popa
 	ret			# cmd_appへ帰る
 
