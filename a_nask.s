@@ -7,6 +7,8 @@
 	.global api_putstr0
 
 	.global api_openwin
+	.global api_putstrwin
+	.global api_boxfilwin
 
 .text
 api_end:	# void api_end(void)
@@ -42,3 +44,42 @@ api_openwin:	# int api_openwin(char *buf, int xsiz, int ysiz, int col_inv, char 
 	popl	%esi
 	popl	%edi
 	ret
+
+api_putstrwin:	# void api_putstrwin(int win, int x, int y, int col, int len, char *str)
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebp
+	pushl	%ebx
+	movl	$6, %edx
+	movl	20(%esp), %ebx	# win
+	movl	24(%esp), %esi	# x
+	movl	28(%esp), %edi	# y
+	movl	32(%esp), %eax	# col
+	movl	36(%esp), %ecx	# len
+	movl	40(%esp), %ebp	# str
+	int 	$0x40
+	popl 	%ebx
+	popl	%ebp
+	popl	%esi
+	popl	%edi
+	ret
+
+api_boxfilwin:	# void api_boxfilwin(int win, int x0, int y0, int x1, int y1, int col)
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebp
+	pushl	%ebx
+	movl	$7, %edx
+	movl	20(%esp), %ebx	# win
+	movl	24(%esp), %eax	# x0
+	movl	28(%esp), %ecx	# y0
+	movl	32(%esp), %esi	# x1
+	movl	36(%esp), %edi	# y1
+	movl	40(%esp), %ebp	# col
+	int 	$0x40
+	popl 	%ebx
+	popl	%ebp
+	popl	%esi
+	popl	%edi
+	ret
+	
