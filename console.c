@@ -349,6 +349,16 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
   return 0;
 }
 
+int *inthandler0c(int *esp)
+{
+  struct TASK *task = task_now();
+  struct CONSOLE *cons = (struct CONSOLE *) *((int *)0xfec);
+  
+  cons_putstr0(cons, "\nINT 0C : \n Stack Exception.\n");
+  
+  return &(task->tss.esp0);	/* 異常終了させる */
+}
+
 int *inthandler0d(int *esp)
 {
   struct TASK *task = task_now();

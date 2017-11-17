@@ -17,7 +17,7 @@
 	.global load_cr0, store_cr0
 	.global load_tr
 
-	.global asm_inthandler0d
+	.global asm_inthandler0c, asm_inthandler0d
 	.global asm_inthandler20, asm_inthandler21, asm_inthandler27, asm_inthandler2c
 	.global asm_cons_putchar
 	.global asm_hrb_api
@@ -117,6 +117,26 @@ store_cr0:	# void store_cr0(int cr0)
 load_tr:	# void load_tr(int tr)
 	ltr	4(%esp)
 	ret
+
+asm_inthandler0c:
+	sti
+	pushw 	%es
+	pushw	%ds
+	pusha
+	movl	%esp, %eax
+	pushl	%eax
+	movw	%ss, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	call	inthandler0c
+	cmpl	$0, %eax
+	jne	end_app
+	popl	%eax
+	popa
+	popw	%ds
+	popw	%es
+	add	$4, %esp
+	iret
 
 asm_inthandler0d:
 	sti
