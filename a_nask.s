@@ -16,6 +16,7 @@
 	.global api_boxfilwin
 	.global	api_point
 	.global api_linewin
+	.global api_getkey
 
 	.global api_initmalloc, api_malloc, api_free
 
@@ -148,6 +149,12 @@ api_linewin:	# void api_linewin(int win, int x0, int y0, int x1, int y1, int col
 	popl	%ebp
 	popl	%esi
 	popl	%edi
+	ret
+
+api_getkey:	# int api_getkey(int mode)
+	movl	$15, %edx
+	movl	4(%esp), %eax	# mode
+	int 	$0x40
 	ret
 	
 api_initmalloc:	# void api_initmalloc(void)

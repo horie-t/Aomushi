@@ -316,6 +316,7 @@ void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
 struct CONSOLE {
   struct SHEET *sht;
   int cur_x, cur_y, cur_c;
+  struct TIMER *timer;
 };
 
 void console_task(struct SHEET *sheet, unsigned int memtotal);
@@ -330,3 +331,4 @@ void cmd_dir(struct CONSOLE *cons);
 void cmd_type(struct CONSOLE *cons, int *fat, char *cmdline);
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline);
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
+void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col);
