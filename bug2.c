@@ -1,0 +1,6 @@
+void HariMain(void)
+{
+  for (;;) {
+
+  }
+}
