@@ -4,7 +4,7 @@ TARGET = aomushi.img
 
 all : $(TARGET)
 
-$(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb bug1.hrb bug2.hrb bug3.hrb
+$(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb bug1.hrb bug2.hrb bug3.hrb
 	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
 	mcopy -i $(TARGET) aomushi.sys ::
 	mcopy -i $(TARGET) ipl10.s ::
@@ -12,6 +12,7 @@ $(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb bug1.hrb bug2.hr
 	mcopy -i $(TARGET) hello.hrb ::
 	mcopy -i $(TARGET) hello2.hrb ::
 	mcopy -i $(TARGET) hello3.hrb ::
+	mcopy -i $(TARGET) hello4.hrb ::
 	mcopy -i $(TARGET) bug1.hrb ::
 	mcopy -i $(TARGET) bug2.hrb ::
 	mcopy -i $(TARGET) bug3.hrb ::
@@ -35,6 +36,9 @@ hello2.hrb : hello2.s
 	$(CC) -nostdlib -T app.ld -o $@ $^
 
 hello3.hrb : hello3.c a_nask.s
+	$(CC) -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
+
+hello4.hrb : hello4.c a_nask.s
 	$(CC) -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
 
 bug1.hrb : bug1.c a_nask.s
