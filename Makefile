@@ -24,7 +24,7 @@ asmhead.bin : asmhead.s
 	$(CC) -nostdlib -T head.ld -o $@ $^
 
 bootpack.hrb : bootpack.c naskfunc.s fifo.c hankaku.c dsctbl.c int.c memory.c timer.c mtask.c graphic.c window.c keyboard.c mouse.c sheet.c file.c console.c lib/aolib.c
-	$(CC) -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
+	$(CC) -march=i486 -m32 -nostdlib -T hrb_os.ld -o $@ $^
 
 hello.hrb : hello.s
 	$(CC) -nostdlib -T app.ld -o $@ $^
@@ -33,10 +33,10 @@ hello2.hrb : hello2.s
 	$(CC) -nostdlib -T app.ld -o $@ $^
 
 hello3.hrb : hello3.c a_nask.s
-	$(CC) -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
+	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 hello4.hrb : hello4.c a_nask.s
-	$(CC) -march=i486 -m32 -nostdlib -T hrb.ld -o $@ $^
+	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 run : $(TARGET)
 	qemu-system-i386 -m 32 -fda $(TARGET) -boot a
