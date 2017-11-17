@@ -11,6 +11,7 @@
 	.global api_putstr0
 
 	.global api_openwin
+	.global api_refreshwin
 	.global api_putstrwin
 	.global api_boxfilwin
 	.global	api_point
@@ -52,6 +53,22 @@ api_openwin:	# int api_openwin(char *buf, int xsiz, int ysiz, int col_inv, char 
 	popl	%edi
 	ret
 
+api_refreshwin:	# void api_refreshwin(int win, int x0, int y0, int x1, int y1)
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	movl	$12, %edx
+	movl	16(%esp), %ebx	# win
+	movl	20(%esp), %eax	# x0
+	movl	24(%esp), %ecx	# y0
+	movl	28(%esp), %esi	# x1
+	movl	32(%esp), %edi	# y1
+	int 	$0x40
+	popl 	%ebx
+	popl	%esi
+	popl	%edi
+	ret
+	
 api_putstrwin:	# void api_putstrwin(int win, int x, int y, int col, int len, char *str)
 	pushl	%edi
 	pushl	%esi

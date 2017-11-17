@@ -5,7 +5,7 @@ TARGET = aomushi.img
 all : $(TARGET)
 
 $(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello5.hrb \
-		winhelo.hrb winhelo2.hrb winhelo3.hrb star1.hrb stars.hrb
+		winhelo.hrb winhelo2.hrb winhelo3.hrb star1.hrb stars.hrb stars2.hrb
 	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
 	mcopy -i $(TARGET) aomushi.sys ::
 	mcopy -i $(TARGET) ipl10.s ::
@@ -20,6 +20,7 @@ $(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello
 	mcopy -i $(TARGET) winhelo3.hrb ::
 	mcopy -i $(TARGET) star1.hrb ::
 	mcopy -i $(TARGET) stars.hrb ::
+	mcopy -i $(TARGET) stars2.hrb ::
 
 ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
@@ -62,6 +63,9 @@ star1.hrb : star1.c a_nask.s
 	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 stars.hrb : stars.c a_nask.s
+	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
+
+stars2.hrb : stars2.c a_nask.s
 	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 run : $(TARGET)
