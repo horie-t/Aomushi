@@ -15,6 +15,7 @@
 	.global api_putstrwin
 	.global api_boxfilwin
 	.global	api_point
+	.global api_linewin
 
 	.global api_initmalloc, api_malloc, api_free
 
@@ -118,6 +119,25 @@ api_point:	# void api_point(int win, int x, int y, int col)
 	movl	28(%esp), %eax	# col
 	int	$0x40
 	popl	%ebx
+	popl	%esi
+	popl	%edi
+	ret
+
+api_linewin:	# void api_linewin(int win, int x0, int y0, int x1, int y1, int col)
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebp
+	pushl	%ebx
+	movl	$13, %edx
+	movl	20(%esp), %ebx	# win
+	movl	24(%esp), %eax	# x0
+	movl	28(%esp), %ecx	# y0
+	movl	32(%esp), %esi	# x1
+	movl	36(%esp), %edi	# y1
+	movl	40(%esp), %ebp	# col
+	int 	$0x40
+	popl 	%ebx
+	popl	%ebp
 	popl	%esi
 	popl	%edi
 	ret
