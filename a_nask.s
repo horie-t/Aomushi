@@ -10,7 +10,7 @@
 	.global api_putchar
 	.global api_putstr0
 
-	.global api_openwin
+	.global api_openwin, api_closewin
 	.global api_refreshwin
 	.global api_putstrwin
 	.global api_boxfilwin
@@ -54,6 +54,14 @@ api_openwin:	# int api_openwin(char *buf, int xsiz, int ysiz, int col_inv, char 
 	popl	%edi
 	ret
 
+api_closewin:	# void api_closewin(int win)
+	pushl	%ebx
+	movl	$14, %edx
+	movl	8(%esp), %ebx	# win
+	int 	$0x40
+	popl	%ebx
+	ret
+	
 api_refreshwin:	# void api_refreshwin(int win, int x0, int y0, int x1, int y1)
 	pushl	%edi
 	pushl	%esi
