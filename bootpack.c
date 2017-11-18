@@ -7,6 +7,9 @@
 extern struct FIFO8 keyfifo, mousefifo;
 extern struct TIMERCTL timerctl;
 
+int keywin_off(struct SHEET *key_win, struct SHEET *sht_win, int cur_c, int cur_x);
+int keywin_on(struct SHEET *key_win, struct SHEET *sht_win, int cur_c);
+
 void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -30,7 +33,7 @@ void HariMain(void)
 
   struct SHTCTL *shtctl;
   struct SHEET *sht_back, *sht_win, *sht_mouse, *sht_cons;
-  struct SHEET *sht = 0;
+  struct SHEET *sht = 0, *key_win;
   unsigned char *buf_back, *buf_win, buf_mouse[256], *buf_cons;
 
   static char keytable0[0x80] = {
@@ -135,6 +138,10 @@ void HariMain(void)
   sheet_updown(sht_win, 2);
   sheet_updown(sht_mouse, 3);
 
+  key_win = sht_win;
+  sht_cons->task = task_cons;
+  sht_cons->flags |= 0x20;	/* カーソルあり */
+
   /* 最初にキーボード状態と食い違いがないように、設定しておく事にする */
   fifo32_put(&keycmd, KEYCMD_LED);
   fifo32_put(&keycmd, key_leds);
@@ -155,6 +162,11 @@ void HariMain(void)
       i = fifo32_get(&fifo);
       io_sti();
 
+      if (key_win->flags == 0) { /* 入力ウインドウが閉じられた */
+	key_win = shtctl->sheets[shtctl->top - 1];
+	cursor_c = keywin_on(key_win, sht_win, cursor_c);
+      }
+      
       if (256 <= i && i <= 511) { /* キーボード・データ */
 	if (i < 256 + 0x80) { 	/* キーコードを文字コードに変換 */
 	  if (key_shift == 0) {
@@ -173,7 +185,7 @@ void HariMain(void)
 	  }
 	}
 	if (s[0] != 0) {	/* 通常文字 */
-	  if (key_to == 0) {				/* タスクAへ */
+	  if (key_win == sht_win) {				/* タスクAへ */
 	    if (cursor_x < 128) {
 	      /* 一文字表示してから、カーソルを１つ進める */
 	      s[1] = 0;
@@ -181,40 +193,31 @@ void HariMain(void)
 	      cursor_x += 8;
 	    }
 	  } else {		/* コンソールへ */
-	    fifo32_put(&task_cons->fifo, s[0] + 256);
+	    fifo32_put(&key_win->task->fifo, s[0] + 256);
 	  }
 	}
 	if (i == 256 + 0x0e && cursor_x > 8) { /* バックスペース */
-	  if (key_to == 0) {
+	  if (key_win == sht_win) {
 	    /* カーソルをスペースで消してから、カーソルを一つ戻す */
 	    putfonts8_asc_sht(sht_win,  cursor_x, 28, COL8_000000, COL8_FFFFFF, " ", 1);
 	    cursor_x -= 8;
 	  } else {
-	    fifo32_put(&task_cons->fifo, 8 + 256);
+	    fifo32_put(&key_win->task->fifo, 8 + 256);
 	  }
 	}
 	if (i == 256 + 0x1c) {
-	  if (key_to != 0) {	/* Enter */
-	    fifo32_put(&task_cons->fifo, 10 + 256);
+	  if (key_win != sht_win) {	/* Enter */
+	    fifo32_put(&key_win->task->fifo, 10 + 256);
 	  }
 	}
 	if (i == 256 + 0x0f) {	/* Tab */
-	  if (key_to == 0) {
-	    key_to = 1;
-	    make_wtitle8(buf_win, sht_win->bxsize, "task_a", 0);
-	    make_wtitle8(buf_cons, sht_cons->bxsize, "console", 1);
-	    cursor_c = -1;	/* カーソルを消す */
-	    boxfill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cursor_x, 28, cursor_x + 7, 43);
-	    fifo32_put(&task_cons->fifo, 2); /* コンソールのカーソルをON */
-	  } else {
-	    key_to = 0;
-	    make_wtitle8(buf_win, sht_win->bxsize, "task_a", 1);
-	    make_wtitle8(buf_cons, sht_cons->bxsize, "console", 0);
-	    cursor_c = COL8_000000;	/* カーソルを出す */
-	    fifo32_put(&task_cons->fifo, 3); /* コンソールのカーソルをOFF */
+	  cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
+	  j = key_win->height - 1;
+	  if (j == 0) {
+	    j = shtctl->top - 1;
 	  }
-	  sheet_refresh(sht_win, 0, 0, sht_win->bxsize, 21);
-	  sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
+	  key_win = shtctl->sheets[j];
+	  cursor_c = keywin_on(key_win, sht_win, cursor_c);
 	}
 	/* 暫定コード。キーボート割り込みがkey upのタイミングでしか来ない。
 	 * その時のコードはdownの時のもの… 仕方がないので、トグルさせる */
@@ -275,7 +278,7 @@ void HariMain(void)
 	  boxfill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
 	}
 	sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
-      } else if (512 <= i && i <= 767) {
+      } else if (512 <= i && i <= 767) { /* マウス・データ */
 	if (mouse_decode(&mdec, i - 512) != 0) {
 	  /* マウス・カーソルの移動 */
 	  mx += mdec.x;
@@ -312,7 +315,7 @@ void HariMain(void)
 		    }
 		    if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 && 5 <= y && y < 19) {
 		      /* 「X」ボタンをクリック */
-		      if (sht->task != 0) { /* アプリが作ったウィンドウか? */
+		      if ((sht->flags && 0x10) != 0) { /* アプリが作ったウィンドウか? */
 			cons = (struct CONSOLE *) *((int *) 0x0fec);
 			cons_putstr0(cons, "\nBreak(mouse) :\n");
 			io_cli(); /* 強制終了中にタスクが変わると困るから */
@@ -358,4 +361,33 @@ void HariMain(void)
       }
     }
   }
+}
+
+int keywin_off(struct SHEET *key_win, struct SHEET *sht_win, int cur_c, int cur_x)
+{
+  change_wtitle8(key_win, 0);
+  if (key_win == sht_win) {
+    cur_c = -1;
+    boxfill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cur_x, 28, cur_x + 7, 43);
+  } else {
+    if ((key_win->flags & 0x20) != 0) {
+      fifo32_put(&key_win->task->fifo, 3); /* コンソールのカーソルOFF */
+    }
+  }
+
+  return cur_c;
+}
+
+int keywin_on(struct SHEET *key_win, struct SHEET *sht_win, int cur_c)
+{
+  change_wtitle8(key_win, 1);
+  if (key_win == sht_win) {
+    cur_c = COL8_000000;	/* カーソルを出す */
+  } else {
+    if ((key_win->flags & 0x20) != 0) {
+      fifo32_put(&key_win->task->fifo, 2); /* コンソールのカーソルON */
+    }
+  }
+
+  return cur_c;
 }
