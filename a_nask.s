@@ -16,8 +16,12 @@
 	.global api_boxfilwin
 	.global	api_point
 	.global api_linewin
+	
 	.global api_getkey
+	
 	.global api_alloctimer, api_inittimer, api_settimer, api_freetimer
+
+	.global api_beep
 
 	.global api_initmalloc, api_malloc, api_free
 
@@ -188,7 +192,13 @@ api_freetimer:	# void api_freetimer(int timer)
 	int	$0x40
 	popl	%ebx
 	ret
-	
+
+api_beep:	# void api_beep(int tone)
+	movl	$20, %edx
+	movl	4(%esp), %eax	# tone
+	int 	$0x40
+	ret
+
 api_initmalloc:	# void api_initmalloc(void)
 	pushl	%ebx
 	movl	$8, %edx
