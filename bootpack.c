@@ -18,7 +18,7 @@ void HariMain(void)
   struct TASK *task_a, *task_cons;
   struct CONSOLE *cons;
   
-  int x, y, mx, my;
+  int x, y, mx, my, mmx = -1, mmy = -1;
   int i, j;
   int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   int cursor_x, cursor_c;
@@ -30,7 +30,7 @@ void HariMain(void)
 
   struct SHTCTL *shtctl;
   struct SHEET *sht_back, *sht_win, *sht_mouse, *sht_cons;
-  struct SHEET *sht;
+  struct SHEET *sht = 0;
   unsigned char *buf_back, *buf_win, buf_mouse[256], *buf_cons;
 
   static char keytable0[0x80] = {
@@ -296,18 +296,35 @@ void HariMain(void)
 
 	  if (mdec.btn & 0x01 != 0) {
 	    /* 左ボタンを押している */
-	    /* 上の下敷きから順番にマウスが指している下敷きを探す */
-	    for (j = shtctl->top - 1; j > 0; j--) {
-	      sht = shtctl->sheets[j];
-	      x = mx - sht->vx0;
-	      y = my - sht->vy0;
-	      if (0 <= x && x < sht->bxsize && 0 <= y && y < sht->bysize) {
-		if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
-		  sheet_updown(sht, shtctl->top - 1);
-		  break;
+	    if (mmx < 0) {
+	      /* 通常モードの場合 */
+	      /* 上の下敷きから順番にマウスが指している下敷きを探す */
+	      for (j = shtctl->top - 1; j > 0; j--) {
+		sht = shtctl->sheets[j];
+		x = mx - sht->vx0;
+		y = my - sht->vy0;
+		if (0 <= x && x < sht->bxsize && 0 <= y && y < sht->bysize) {
+		  if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
+		    sheet_updown(sht, shtctl->top - 1);
+		    if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
+		      mmx = mx;	/* マウス移動モードへ */
+		      mmy = my;
+		    }
+		    break;
+		  }
 		}
 	      }
+	    } else {
+	      /* ウィンドウ移動モードの場合 */
+	      x = mx - mmx;
+	      y = my - mmy;
+	      sheet_slide(sht, sht->vx0 + x, sht->vy0 + y);
+	      mmx = mx;
+	      mmy = my;
 	    }
+	  } else {
+	    /* 左ボタンを押していない */
+	    mmx = -1;
 	  }
 	}
       } else if (i <= 1) {	/* カーソル用タイマ */
