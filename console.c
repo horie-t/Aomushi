@@ -15,7 +15,7 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
   cons.cur_x = 8;
   cons.cur_y = 28;
   cons.cur_c = -1;
-  *((int *)0x0fec) = (int)&cons;
+  task->cons = &cons;
 
   fifo32_init(&task->fifo, 128, fifobuf, task);
 
@@ -315,7 +315,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
       datsiz = *((int *) (p + 0x0010));
       dathrb = *((int *) (p + 0x0014));
       q = (char *)memman_alloc_4k(memman, segsiz);
-      *((int *)0x0fe8) = (int)q;
+      task->ds_base = (int)q;
       set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER + 0x60);
       set_segmdesc(gdt + 1004, segsiz - 1,      (int)q, AR_DATA32_RW + 0x60);
       for (i = 0; i < datsiz; i++) {
@@ -350,9 +350,9 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax)
 {
-  int ds_base = *((int *)0x0fe8);
   struct TASK *task = task_now();
-  struct CONSOLE *cons = (struct CONSOLE *) *((int *) 0x0fec);
+  int ds_base = task->ds_base;
+  struct CONSOLE *cons = task->cons;
   struct SHTCTL *shtctl = (struct SHTCTL *) *((int *) 0x0fe4);
   struct SHEET *sht;
   int i;
@@ -525,7 +525,7 @@ void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col)
 int *inthandler0c(int *esp)
 {
   struct TASK *task = task_now();
-  struct CONSOLE *cons = (struct CONSOLE *) *((int *)0xfec);
+  struct CONSOLE *cons = task->cons;
   char s[30];
   
   cons_putstr0(cons, "\nINT 0C : \n Stack Exception.\n");
@@ -538,7 +538,7 @@ int *inthandler0c(int *esp)
 int *inthandler0d(int *esp)
 {
   struct TASK *task = task_now();
-  struct CONSOLE *cons = (struct CONSOLE *) *((int *)0xfec);
+  struct CONSOLE *cons = task->cons;
   char s[30];
   
   cons_putstr0(cons, "\nINT 0D : \n General Protected Exception.\n");
