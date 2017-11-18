@@ -80,8 +80,8 @@ void sheet_updown(struct SHEET *sht, int height)
       }
       ctl->sheets[height] = sht;
       /* 新しい下敷きの情報に沿って画面を描き直す */
-      sheet_refreshmap(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bxsize, height + 1);
-      sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bxsize, height + 1, old);
+      sheet_refreshmap(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height + 1);
+      sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height + 1, old);
     } else {			/* 非表示化 */
       if (ctl->top > old) {
 	/* 上になっているものを下ろす */
@@ -92,8 +92,8 @@ void sheet_updown(struct SHEET *sht, int height)
       }
       ctl->top--;		/* 表示中の下敷きが1つ減るので一番上の高さが減る */
       /* 新しい下敷きの情報に沿って画面を描き直す */
-      sheet_refreshmap(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bxsize, 0);
-      sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bxsize, 0, old - 1);
+      sheet_refreshmap(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, 0);
+      sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, 0, old - 1);
     }
   } else if (old < height) {	/* 以前より高くなる */
     if (old >= 0) {
@@ -113,8 +113,8 @@ void sheet_updown(struct SHEET *sht, int height)
       ctl->top++;		/* 表示中の下敷きが1つ増えるので、一番上の高さを変える */
     }
     /* 新しい下敷きの情報に沿って画面を描き直す */
-    sheet_refreshmap(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bxsize, height);
-    sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bxsize, height, height);
+    sheet_refreshmap(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height);
+    sheet_refreshsub(ctl, sht->vx0, sht->vy0, sht->vx0 + sht->bxsize, sht->vy0 + sht->bysize, height, height);
   }
   return;
 }
@@ -123,7 +123,7 @@ void sheet_refresh(struct SHEET *sht, int bx0, int by0, int bx1, int by1)
 {
   if (sht->height >= 0) {
     sheet_refreshsub(sht->ctl, sht->vx0 + bx0, sht->vy0 + by0,
-		     sht->vx0 + bx1, sht->vy0 +by1, sht->height, sht->height);
+		     sht->vx0 + bx1, sht->vy0 + by1, sht->height, sht->height);
   }
   return;
 }
