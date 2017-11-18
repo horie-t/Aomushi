@@ -17,6 +17,7 @@
 	.global	api_point
 	.global api_linewin
 	.global api_getkey
+	.global api_alloctimer, api_inittimer, api_settimer, api_freetimer
 
 	.global api_initmalloc, api_malloc, api_free
 
@@ -155,6 +156,37 @@ api_getkey:	# int api_getkey(int mode)
 	movl	$15, %edx
 	movl	4(%esp), %eax	# mode
 	int 	$0x40
+	ret
+
+api_alloctimer:	# int api_alloctimer(void)
+	movl	$16, %edx
+	int 	$0x40
+	ret
+
+api_inittimer:	# void api_inittimer(int timer, int data)
+	pushl	%ebx
+	movl	$17, %edx
+	movl	8(%esp), %ebx	# timer
+	movl	12(%esp), %eax	# data
+	int	$0x40
+	popl	%ebx
+	ret
+
+api_settimer:	# void api_settimer(int timer, int time)
+	pushl	%ebx
+	movl	$18, %edx
+	movl	8(%esp), %ebx	# timer
+	movl	12(%esp), %eax	# time
+	int 	$0x40
+	popl	%ebx
+	ret
+
+api_freetimer:	# void api_freetimer(int timer)
+	pushl	%ebx
+	movl	$19, %edx
+	movl	8(%esp), %ebx	# timer
+	int	$0x40
+	popl	%ebx
 	ret
 	
 api_initmalloc:	# void api_initmalloc(void)
