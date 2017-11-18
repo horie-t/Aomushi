@@ -6,7 +6,7 @@ all : $(TARGET)
 
 $(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello5.hrb \
 		winhelo.hrb winhelo2.hrb winhelo3.hrb star1.hrb stars.hrb stars2.hrb lines.hrb walk.hrb \
-		noodle.hrb beepdown.hrb
+		noodle.hrb beepdown.hrb color.hrb
 	mformat -i $(TARGET) -f 1440 -C -B ipl.bin ::
 	mcopy -i $(TARGET) aomushi.sys ::
 	mcopy -i $(TARGET) ipl10.s ::
@@ -26,6 +26,7 @@ $(TARGET) : ipl.bin aomushi.sys hello.hrb hello2.hrb hello3.hrb hello4.hrb hello
 	mcopy -i $(TARGET) walk.hrb ::
 	mcopy -i $(TARGET) noodle.hrb ::
 	mcopy -i $(TARGET) beepdown.hrb ::
+	mcopy -i $(TARGET) color.hrb ::
 
 ipl.bin : ipl10.s ./binary.ld
 	$(CC) -nostdlib ipl10.s -o ipl.bin -T binary.ld
@@ -83,6 +84,9 @@ noodle.hrb : noodle.c a_nask.s lib/aolib.c
 	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 beepdown.hrb : beepdown.c a_nask.s
+	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
+
+color.hrb : color.c a_nask.s
 	$(CC) -march=i486 -m32 -nostdlib -T hrb_app.ld -o $@ $^
 
 run : $(TARGET)

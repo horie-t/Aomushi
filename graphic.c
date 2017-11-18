@@ -21,7 +21,21 @@ void init_pallete(void)
     0x84, 0x84, 0x84,	/* 暗い灰色 */
   };
 
+  unsigned char table2[216 * 3];
+  int r, g, b;
+
   set_pallete(0, 15, table_rgb);
+  
+  for (b = 0; b < 6; b++) {
+    for (g = 0; b < 6; g++) {
+      for (r = 0; r < 6; r++) {
+	table2[(r + g * 6 + b * 36) * 3 + 0] = r * 51;
+	table2[(r + g * 6 + b * 36) * 3 + 1] = g * 51;
+	table2[(r + g * 6 + b * 36) * 3 + 2] = b * 51;
+      }
+    }
+  }
+  set_pallete(16, 231, table2);
 
   return;
 }
