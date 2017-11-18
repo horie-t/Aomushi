@@ -372,7 +372,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
     sht->flags |= 0x10;
     sheet_setbuf(sht, (char *) ebx + ds_base, esi, edi, eax);
     make_window8((char *) ebx + ds_base, esi, edi, (char *) ecx + ds_base, 0);
-    sheet_slide(sht, (shtctl->xsize - esi) / 2, (shtctl->ysize - edi) / 2);
+    sheet_slide(sht, ((shtctl->xsize - esi) / 2) & ~3, (shtctl->ysize - edi) / 2);
     sheet_updown(sht, shtctl->top);	/* 今のマウスと同じ高さを指定。マウスはこの上に移動する。 */
     reg[7] = (int) sht;
   } else if (edx == 6) {

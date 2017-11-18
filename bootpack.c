@@ -21,7 +21,7 @@ void HariMain(void)
   struct TASK *task_a, *task_cons[2], *task;
   struct CONSOLE *cons;
   
-  int x, y, mx, my, mmx = -1, mmy = -1;
+  int x, y, mx, my, mmx = -1, mmy = -1, mmx2 = 0;
   int i, j;
   int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   
@@ -280,6 +280,7 @@ void HariMain(void)
 		    if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
 		      mmx = mx;	/* マウス移動モードへ */
 		      mmy = my;
+		      mmx2 = sht->vx0;
 		    }
 		    if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 && 5 <= y && y < 19) {
 		      /* 「X」ボタンをクリック */
@@ -300,8 +301,7 @@ void HariMain(void)
 	      /* ウィンドウ移動モードの場合 */
 	      x = mx - mmx;
 	      y = my - mmy;
-	      sheet_slide(sht, sht->vx0 + x, sht->vy0 + y);
-	      mmx = mx;
+	      sheet_slide(sht, (mmx2 + x + 2) & ~3, sht->vy0 + y);
 	      mmy = my;
 	    }
 	  } else {
