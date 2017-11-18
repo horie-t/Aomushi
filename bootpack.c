@@ -18,8 +18,8 @@ void HariMain(void)
   struct TASK *task_a, *task_cons;
   struct CONSOLE *cons;
   
-  int mx, my;
-  int i;
+  int x, y, mx, my;
+  int i, j;
   int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   int cursor_x, cursor_c;
 
@@ -30,6 +30,7 @@ void HariMain(void)
 
   struct SHTCTL *shtctl;
   struct SHEET *sht_back, *sht_win, *sht_mouse, *sht_cons;
+  struct SHEET *sht;
   unsigned char *buf_back, *buf_win, buf_mouse[256], *buf_cons;
 
   static char keytable0[0x80] = {
@@ -294,8 +295,19 @@ void HariMain(void)
 	  sheet_slide(sht_mouse, mx, my); /* sheet_refreshを含む */
 
 	  if (mdec.btn & 0x01 != 0) {
-	    /* 左ボタンを押していたら、sht_winを動かす。 */
-	    sheet_slide(sht_win, mx - 80, my - 8);
+	    /* 左ボタンを押している */
+	    /* 上の下敷きから順番にマウスが指している下敷きを探す */
+	    for (j = shtctl->top - 1; j > 0; j--) {
+	      sht = shtctl->sheets[j];
+	      x = mx - sht->vx0;
+	      y = my - sht->vy0;
+	      if (0 <= x && x < sht->bxsize && 0 <= y && y < sht->bysize) {
+		if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
+		  sheet_updown(sht, shtctl->top - 1);
+		  break;
+		}
+	      }
+	    }
 	  }
 	}
       } else if (i <= 1) {	/* カーソル用タイマ */
