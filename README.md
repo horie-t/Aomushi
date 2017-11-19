@@ -5,4 +5,6 @@ Linux(Ubuntu)環境で、HariboteOSのLinux版を作ってみるプロジェク�
 
 HariboteOSでは、「nask」という独自アセンブラを使いますが、Gnu Assemblerでやる予定です。
 
+ツール・チェインが違うから、本とは違った内容になるかと思ったけど、後半は、C言語でやるので、写経状態でした。
+
 開発の詳細は、[Wikiページ](https://github.com/horie-t/Aomushi/wiki)に書いていきます。
