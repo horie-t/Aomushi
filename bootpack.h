@@ -211,6 +211,7 @@ struct TASKCTL {
   struct TASK tasks0[MAX_TASKS];
 };
 
+extern struct TASKCTL *taskctl;
 extern struct TIMER *task_timer;
 
 struct TASK *task_init(struct MEMMAN *memman);
@@ -337,6 +338,7 @@ void cmd_dir(struct CONSOLE *cons);
 void cmd_type(struct CONSOLE *cons, int *fat, char *cmdline);
 void cmd_exit(struct CONSOLE *cons, int *fat);
 void cmd_start(struct CONSOLE *cons, char *cmdline, int memtotal);
+void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal);
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline);
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
 void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col);
@@ -345,5 +347,6 @@ void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col)
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
 void close_constask(struct TASK *task);
 void close_console(struct SHEET *sht);
+struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 
 void debug_message(char *s);

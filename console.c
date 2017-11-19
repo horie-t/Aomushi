@@ -16,9 +16,11 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
   cons.cur_c = -1;
   task->cons = &cons;
 
-  cons.timer = timer_alloc();
-  timer_init(cons.timer, &task->fifo, 1);
-  timer_settime(cons.timer, 50);
+  if (sheet != 0) {
+    cons.timer = timer_alloc();
+    timer_init(cons.timer, &task->fifo, 1);
+    timer_settime(cons.timer, 50);
+  }
 
   /* FAT */
   file_read_fat(fat, (unsigned char *) (ADR_DISKIMG + 0x000200));
@@ -76,6 +78,9 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
 	  cons_newline(&cons);
 
 	  cons_runcmd(cmdline, &cons, fat, memtotal); /* コマンド実行 */
+	  if (sheet == 0) {
+	    cmd_exit(&cons, fat);
+	  }
 
 	  /* プロンプト表示 */
 	  cons_putchar(&cons, '>', 1);
@@ -90,10 +95,12 @@ void console_task(struct SHEET *sheet, unsigned int memtotal)
       }
 
       /* カーソル再表示 */
-      if (cons.cur_c >= 0) {
-	boxfill8(sheet->buf, sheet->bxsize, cons.cur_c, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
+      if (sheet != 0) {
+	if (cons.cur_c >= 0) {
+	  boxfill8(sheet->buf, sheet->bxsize, cons.cur_c, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
+	}
+	sheet_refresh(sheet, cons.cur_x, cons.cur_y, cons.cur_x + 8, cons.cur_y + 16);
       }
-      sheet_refresh(sheet, cons.cur_x, cons.cur_y, cons.cur_x + 8, cons.cur_y + 16);
     }
   }
 }
@@ -106,18 +113,20 @@ void cons_newline(struct CONSOLE *cons)
   if (cons->cur_y < 28 + 112) {
     cons->cur_y += 16;		/* 次の行へ */
   } else {
-    /* スクロール */
-    for (y = 28; y < 28 + 112; y++) {
-      for (x = 8; x < 8 + 240; x++) {
-	sheet->buf[x + y * sheet->bxsize] = sheet->buf[x + (y + 16) * sheet->bxsize];
+    if (sheet != 0) {
+      /* スクロール */
+      for (y = 28; y < 28 + 112; y++) {
+	for (x = 8; x < 8 + 240; x++) {
+	  sheet->buf[x + y * sheet->bxsize] = sheet->buf[x + (y + 16) * sheet->bxsize];
+	}
       }
-    }
-    for (y = 28 + 112; y < 28 + 128; y++) {
-      for (x = 8; x < 8 + 240; x++) {
-	sheet->buf[x + y * sheet->bxsize] = COL8_000000;
+      for (y = 28 + 112; y < 28 + 128; y++) {
+	for (x = 8; x < 8 + 240; x++) {
+	  sheet->buf[x + y * sheet->bxsize] = COL8_000000;
+	}
       }
+      sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
     }
-    sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
   }
   cons->cur_x = 8;
   
@@ -132,7 +141,9 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
 
   if (s[0] == 0x09) {		/* タブ */
     for (;;) {
-      putfonts8_asc_sht(cons->sht, cons->cur_x, cons->cur_y, COL8_FFFFFF, COL8_000000, " ", 1);
+      if (cons->sht != 0) {
+	putfonts8_asc_sht(cons->sht, cons->cur_x, cons->cur_y, COL8_FFFFFF, COL8_000000, " ", 1);
+      }
       cons->cur_x += 8;
       if (cons->cur_x == 8 + 240) { /* 右端まで来たので改行 */
 	cons_newline(cons);
@@ -146,7 +157,9 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
   } else if (s[0] == 0x0d) {	/* 復帰 */
     /* とりあえず何もしない */
   } else {			/* 普通の文字 */
-    putfonts8_asc_sht(cons->sht, cons->cur_x, cons->cur_y, COL8_FFFFFF, COL8_000000, s, 1);
+    if (cons->sht != 0) {
+      putfonts8_asc_sht(cons->sht, cons->cur_x, cons->cur_y, COL8_FFFFFF, COL8_000000, s, 1);
+    }
     if (move != 0) {
       /* moveが0のときはカーソルを進めない */
       cons->cur_x += 8;
@@ -178,25 +191,27 @@ void cons_putstr1(struct CONSOLE *cons, char *s, int l)
 
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, unsigned int memtotal)
 {
-  if (strcmp(cmdline, "mem") == 0) {
+  if (strcmp(cmdline, "mem") == 0 && cons->sht != 0) {
     cmd_mem(cons, memtotal);
-  } else if (strcmp(cmdline, "cls") == 0) {
+  } else if (strcmp(cmdline, "cls") == 0 && cons->sht != 0) {
     cmd_cls(cons);
-  } else if (strcmp(cmdline, "dir") == 0) {
+  } else if (strcmp(cmdline, "dir") == 0 && cons->sht != 0) {
     cmd_dir(cons);
-  } else if (strncmp(cmdline, "type ", 5) == 0) {
+  } else if (strncmp(cmdline, "type ", 5) == 0 && cons->sht != 0) {
     cmd_type(cons, fat, cmdline);
   } else if (strcmp(cmdline, "exit") == 0) {
     cmd_exit(cons, fat);
   } else if (strncmp(cmdline, "start ", 6) == 0) {
     cmd_start(cons, cmdline, memtotal);
+  } else if (strncmp(cmdline, "ncst ", 5) == 0) {
+    cmd_ncst(cons, cmdline, memtotal);
   } else if (cmdline[0] != 0) {
     if (cmd_app(cons, fat, cmdline) == 0) {
       /* コマンドではなく、さらに空行でもない */
       cons_putstr0(cons, "Bad command.\n\n");
     }
   }
-
+  
   return;
 }
 
@@ -283,11 +298,20 @@ void cmd_exit(struct CONSOLE *cons, int *fat)
   struct TASK *task = task_now();
   struct SHTCTL *shtctl = (struct SHTCTL *) *((int *) 0x0fe4);
   struct FIFO32 *fifo = (struct FIFO32 *) *((int *) 0x0fec);
-  timer_cancel(cons->timer);
+
+  if (cons->sht != 0) {
+    timer_cancel(cons->timer);
+  }
   memman_free_4k(memman, (int) fat, 4 * 2880);
+  
   io_cli();
-  fifo32_put(fifo, cons->sht - shtctl->sheets0 + 768); /* 768〜1023 */
+  if (cons->sht != 0) {
+    fifo32_put(fifo, cons->sht - shtctl->sheets0 + 768); /* 768〜1023 */
+  } else {
+    fifo32_put(fifo, task - taskctl->tasks0 + 1024); /* 1024〜2023 */
+  }
   io_sti();
+  
   for (;;) {
     task_sleep(task);
   }
@@ -304,6 +328,21 @@ void cmd_start(struct CONSOLE *cons, char *cmdline, int memtotal)
   sheet_updown(sht, shtctl->top);
   /* コマンドラインにいれた文字列を1文字ずつ新しいコンソールに入力 */
   for (i = 6; cmdline[i] != 0; i++) {
+    fifo32_put(fifo, cmdline[i] + 256);
+  }
+  fifo32_put(fifo, 10 + 256);	/* Enter */
+  cons_newline(cons);
+  return;
+}
+
+void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal)
+{
+  struct TASK *task = open_constask(0, memtotal);
+  struct FIFO32 *fifo = &task->fifo;
+  int i;
+  
+  /* コマンドラインにいれた文字列を1文字ずつ新しいコンソールに入力 */
+  for (i = 5; cmdline[i] != 0; i++) {
     fifo32_put(fifo, cmdline[i] + 256);
   }
   fifo32_put(fifo, 10 + 256);	/* Enter */
