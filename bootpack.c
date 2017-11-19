@@ -44,7 +44,7 @@ void HariMain(void)
 
   struct SHTCTL *shtctl;
   struct SHEET /* *sht_back, */ *sht_mouse;
-  struct SHEET *sht = 0, *key_win;
+  struct SHEET *sht = 0, *sht2, *key_win;
   unsigned char *buf_back, *buf_win, buf_mouse[256], *buf_cons[2];
 
   static char keytable0[0x80] = {
@@ -310,6 +310,10 @@ void HariMain(void)
 			task_run(task, -1, 0);
 		      } else {	/* コンソール */
 			task = sht->task;
+			sheet_updown(sht, -1); /* とりあえず非表示にする */
+			keywin_off(key_win);
+			key_win = shtctl->sheets[shtctl->top - 1];
+			keywin_on(key_win);
 			io_cli();
 			fifo32_put(&task->fifo, 4);
 			io_sti();
@@ -340,6 +344,10 @@ void HariMain(void)
 	close_console(shtctl->sheets0 + (i - 768));
       } else if (1024 <= i && i <= 2023) {
 	close_constask(taskctl->tasks0 + (i - 1024));
+      } else if (2024 <= i && i <= 2279) { /* コンソールだけ閉じる */
+	sht2 = shtctl->sheets0 + (i - 2024);
+	memman_free_4k(memman, (int) sht2->buf, 256 * 165);
+	sheet_free(sht2);
       }
     }
   }
