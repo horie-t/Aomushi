@@ -166,6 +166,14 @@ int sprintf_char(char *str, int c)
   return 1;
 }
 
+int strlen(char *s)
+{
+  char *t = s;
+
+  while (*t) t++;
+
+  return (int)(t - s);
+}
 
 int strcmp(char *s1, char *s2)
 {
