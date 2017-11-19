@@ -291,7 +291,7 @@ void HariMain(void)
 		    }
 		    if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 && 5 <= y && y < 19) {
 		      /* 「X」ボタンをクリック */
-		      if ((sht->flags && 0x10) != 0) { /* アプリが作ったウィンドウか? */
+		      if ((sht->flags & 0x10) != 0) { /* アプリが作ったウィンドウか? */
 			task = sht->task;
 			cons_putstr0(task->cons, "\nBreak(mouse) :\n");
 			io_cli(); /* 強制終了中にタスクが変わると困るから */
