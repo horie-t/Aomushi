@@ -22,6 +22,7 @@ void HariMain(void)
   struct CONSOLE *cons;
   
   int x, y, mx, my, mmx = -1, mmy = -1, mmx2 = 0;
+  int new_mx = -1, new_my = 0, new_wx = 0x7fffffff, new_wy = 0;
   int i, j;
   int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   
@@ -146,8 +147,19 @@ void HariMain(void)
       
     io_cli();
     if (fifo32_status(&fifo) == 0) {
-      task_sleep(task_a);
-      io_sti();
+      /* FIFOが空になったので、保留している描画があれば実行する */
+      if (new_mx >= 0) {
+	io_sti();
+	sheet_slide(sht_mouse, new_mx, new_my);
+	new_mx = -1;
+      } else if (new_wx != 0x7fffffff) {
+	io_sti();
+	sheet_slide(sht, new_wx, new_wy);
+	new_wx = 0x7fffffff;
+      } else {
+	task_sleep(task_a);
+	io_sti();
+      }
     } else {
       i = fifo32_get(&fifo);
       io_sti();
@@ -260,6 +272,8 @@ void HariMain(void)
 	  }
 	  sheet_slide(sht_mouse, mx, my); /* sheet_refreshを含む */
 
+	  new_mx = mx;
+	  new_my = my;
 	  if (mdec.btn & 0x01 != 0) {
 	    /* 左ボタンを押している */
 	    if (mmx < 0) {
@@ -281,6 +295,7 @@ void HariMain(void)
 		      mmx = mx;	/* マウス移動モードへ */
 		      mmy = my;
 		      mmx2 = sht->vx0;
+		      new_wy = sht->vy0;
 		    }
 		    if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 && 5 <= y && y < 19) {
 		      /* 「X」ボタンをクリック */
@@ -301,12 +316,17 @@ void HariMain(void)
 	      /* ウィンドウ移動モードの場合 */
 	      x = mx - mmx;
 	      y = my - mmy;
-	      sheet_slide(sht, (mmx2 + x + 2) & ~3, sht->vy0 + y);
+	      new_wx = (mmx2 + x + 2) & ~3;
+	      new_wy = new_wy + y;
 	      mmy = my;
 	    }
 	  } else {
 	    /* 左ボタンを押していない */
 	    mmx = -1;
+	    if (new_wx != 0x7fffffff) {
+	      sheet_slide(sht, new_wx, new_wy); /* 一度確定させる */
+	      new_wx = 0x7fffffff;
+	    }
 	  }
 	}
       }
