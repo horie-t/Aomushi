@@ -345,3 +345,5 @@ void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col)
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
 void close_constask(struct TASK *task);
 void close_console(struct SHEET *sht);
+
+void debug_message(char *s);

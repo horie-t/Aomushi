@@ -10,6 +10,17 @@ extern struct TIMERCTL timerctl;
 void keywin_off(struct SHEET *key_win);
 void keywin_on(struct SHEET *key_win);
 
+struct SHEET *sht_back = 0;
+
+void debug_message(char *s)
+{
+  static int row = 0;
+  if (sht_back != 0) {
+    putfonts8_asc_sht(sht_back, 0, row++ * 16,
+		      COL8_FFFFFF, COL8_008484, s, strlen(s));
+  }
+}
+
 void HariMain(void)
 {
   struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -32,7 +43,7 @@ void HariMain(void)
   struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 
   struct SHTCTL *shtctl;
-  struct SHEET *sht_back, *sht_mouse;
+  struct SHEET /* *sht_back, */ *sht_mouse;
   struct SHEET *sht = 0, *key_win;
   unsigned char *buf_back, *buf_win, buf_mouse[256], *buf_cons[2];
 
